@@ -4,7 +4,7 @@
 #include <QWidget>
 
 namespace Ui {
-	class MainWindow;
+class MainWindow;
 }
 
 class MainWindow : public QWidget
@@ -12,7 +12,7 @@ class MainWindow : public QWidget
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget* parent = nullptr);
+	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow() override;
 
 private:
@@ -20,8 +20,7 @@ private:
 	void InitConnect();
 
 private:
-	Ui::MainWindow* m_UI;
-
+	Ui::MainWindow *m_UI;
 };
 
 #endif // MAINWINDOW_H

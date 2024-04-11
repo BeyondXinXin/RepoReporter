@@ -4,7 +4,7 @@
 
 #include "MainWindow.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 	a.setFont(QFont("Microsoft Yahei", 9));
