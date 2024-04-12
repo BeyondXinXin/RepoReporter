@@ -1,26 +1,23 @@
-﻿#ifndef MAINWINDOW_H
+#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QWidget>
+#include <QMainWindow>
 
+QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
+QT_END_NAMESPACE
 
-class MainWindow : public QWidget
+class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = nullptr);
-	~MainWindow() override;
+	MainWindow(QWidget *parent = nullptr);
+	~MainWindow();
 
 private:
-	void InitUi();
-	void InitConnect();
-
-private:
-	Ui::MainWindow *m_UI;
+	Ui::MainWindow *ui;
 };
-
 #endif // MAINWINDOW_H

@@ -1,20 +1,22 @@
-﻿#include "MainWindow.h"
-#include "ui_MainWindow.h"
+#include "mainwindow.h"
+#include "./ui_mainwindow.h"
+
+#include <QFile>
+#include <QStandardItem>
+
+
 
 MainWindow::MainWindow(QWidget *parent)
-	: QWidget(parent)
-	, m_UI(new Ui::MainWindow)
+	: QMainWindow(parent)
+	, ui(new Ui::MainWindow)
 {
-	m_UI->setupUi(this);
-	InitUi();
-	InitConnect();
+	ui->setupUi(this);
+	ui->splitter->setSizes({250, 1000});
+
+	move(0,0);
 }
 
 MainWindow::~MainWindow()
 {
-	delete m_UI;
+	delete ui;
 }
-
-void MainWindow::InitUi() {}
-
-void MainWindow::InitConnect() {}
