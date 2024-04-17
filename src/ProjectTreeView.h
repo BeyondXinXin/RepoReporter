@@ -11,13 +11,14 @@ class ProjectTreeView : public QTreeView
 	Q_OBJECT
 public:
 	ProjectTreeView(QWidget *parent = nullptr);
-	
+
 protected:
 	void contextMenuEvent(QContextMenuEvent *event) override;
-	
+	void mouseReleaseEvent(QMouseEvent *event) override;
+
 private slots:
 	void AddProject();
-	
+
 private:
 	QAction * m_AddAction;
 	ProjectTreeModel * m_Model;

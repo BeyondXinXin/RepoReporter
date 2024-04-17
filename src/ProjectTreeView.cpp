@@ -12,17 +12,17 @@
 ProjectTreeView::ProjectTreeView(QWidget *parent)
 	: QTreeView(parent)
 {
-	m_AddAction=new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
-	connect(m_AddAction, &QAction::triggered,this, &ProjectTreeView::AddProject);
-	
-	m_Model= new ProjectTreeModel(this);
+	m_AddAction = new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
+	connect(m_AddAction, &QAction::triggered, this, &ProjectTreeView::AddProject);
+
+	m_Model = new ProjectTreeModel(this);
 	setModel(m_Model);
 	show();
-	
+
 	setDragEnabled(true);
 	setAcceptDrops(true);
 	setDragDropMode(QAbstractItemView::InternalMove);
-	
+
 	header()->setVisible(false);
 	header()->resizeSection(0, 200);
 	header()->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -35,8 +35,22 @@ void ProjectTreeView::contextMenuEvent(QContextMenuEvent *event)
 	menu.exec(event->globalPos());
 }
 
+void ProjectTreeView::mouseReleaseEvent(QMouseEvent *event)
+{
+	QTreeView::mouseReleaseEvent(event);
+	if (!indexAt(event->pos()).isValid()) {
+		clearSelection();
+	}
+}
+
 void ProjectTreeView::AddProject()
 {
-	
+	QModelIndex currentIndex;
+	if (selectedIndexes().isEmpty()) {
+		currentIndex = QModelIndex();
+	} else {
+		currentIndex = selectedIndexes().first();
+	}
+	m_Model->InsertData(currentIndex, u8"Data " + QString::number(m_Model->rowCount()));
 }
 

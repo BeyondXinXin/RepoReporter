@@ -1,11 +1,11 @@
-#include "FileModel.h"
+ï»¿#include "FileModel.h"
 
 FileModel::FileModel(QObject* parent)
 	: QAbstractItemModel(parent)
 {
-	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file1.txt"), QString::fromUtf8(u8"²Ù×÷1")));
-	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file2.txt"), QString::fromUtf8(u8"²Ù×÷2")));
-	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file3.txt"), QString::fromUtf8(u8"²Ù×÷3")));
+	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file1.txt"), QString::fromUtf8(u8"æ“ä½œ1")));
+	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file2.txt"), QString::fromUtf8(u8"æ“ä½œ2")));
+	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file3.txt"), QString::fromUtf8(u8"æ“ä½œ3")));
 }
 
 FileModel::~FileModel()
@@ -19,14 +19,14 @@ QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) con
 
 	if (!parent.isValid())
 	{
-		// È·±£ĞĞºÅÓĞĞ§
+		// ç¡®ä¿è¡Œå·æœ‰æ•ˆ
 		if (row < 0 || row >= m_files.size())
 			return QModelIndex();
 
-		// ½«ÎÄ¼şÂ·¾¶×ª»»Îª¹şÏ£Öµ
+		// å°†æ–‡ä»¶è·¯å¾„è½¬æ¢ä¸ºå“ˆå¸Œå€¼
 		quintptr pointer = qHash(m_files.at(row).first);
 
-		// ´´½¨Ë÷Òı
+		// åˆ›å»ºç´¢å¼•
 		return createIndex(row, column, reinterpret_cast<void*>(pointer));
 	}
 
@@ -36,13 +36,13 @@ QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) con
 
 QModelIndex FileModel::parent(const QModelIndex& child) const
 {
-	return QModelIndex(); // ÎÄ¼şÁĞ±í²»ÊÇÒ»¸öÊ÷ĞÎ½á¹¹£¬ËùÒÔ²»ĞèÒª¸¸Ë÷Òı
+	return QModelIndex(); // æ–‡ä»¶åˆ—è¡¨ä¸æ˜¯ä¸€ä¸ªæ ‘å½¢ç»“æ„ï¼Œæ‰€ä»¥ä¸éœ€è¦çˆ¶ç´¢å¼•
 }
 
 int FileModel::rowCount(const QModelIndex& parent) const
 {
 	if (parent.isValid())
-		return 0; // ÎÄ¼şÁĞ±íÃ»ÓĞ×ÓÏî
+		return 0; // æ–‡ä»¶åˆ—è¡¨æ²¡æœ‰å­é¡¹
 
 	return m_files.size();
 }
@@ -50,7 +50,7 @@ int FileModel::rowCount(const QModelIndex& parent) const
 int FileModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
-	return 2; // ¹Ì¶¨ÎªÁ½ÁĞ£ºÂ·¾¶ºÍ²Ù×÷
+	return 2; // å›ºå®šä¸ºä¸¤åˆ—ï¼šè·¯å¾„å’Œæ“ä½œ
 }
 
 QVariant FileModel::data(const QModelIndex& index, int role) const
@@ -80,9 +80,9 @@ QVariant FileModel::headerData(int section, Qt::Orientation orientation, int rol
 	if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
 	{
 		if (section == 0)
-			return u8"Â·¾¶";
+			return u8"è·¯å¾„";
 		else if (section == 1)
-			return u8"²Ù×÷";
+			return u8"æ“ä½œ";
 	}
 
 	return QVariant();
