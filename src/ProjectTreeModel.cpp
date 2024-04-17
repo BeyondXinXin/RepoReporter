@@ -18,23 +18,54 @@ bool ProjectTreeModel::InsertData(const QModelIndex &index, QString name)
 {
 	if (!index.isValid()) {
 		beginInsertRows(QModelIndex(), rootNode->children.size(), rootNode->children.size());
-		Node *node = new Node(name, rootNode);
-		rootNode->children.append(node);
+		Node *child = new Node(name, rootNode);
+		Q_UNUSED(child)
 		endInsertRows();
 		return true;
 	}
 
 	beginInsertRows(index, rowCount(index), rowCount(index));
-	Node *node = static_cast<Node *>(index.internalPointer());
-	if (node->parentNode != nullptr) {
+	Node *parentNode = static_cast<Node *>(index.internalPointer());
+	if (parentNode->parentNode != rootNode) {
 		endInsertRows();
 		return false;
 	}
-	Node *child = new Node(name, node);
+	Node *child = new Node(name, parentNode);
 	Q_UNUSED(child)
-
 	endInsertRows();
+
 	return true;
+}
+
+bool ProjectTreeModel::DeleteData(const QModelIndex &index)
+{
+	if (!index.isValid()){
+		return false;
+	}
+
+	Node *deleteNode = static_cast<Node *>(index.internalPointer());
+	if (!deleteNode){
+		return false;
+	}
+
+	Node *parentNode = deleteNode->parentNode;
+	QModelIndex parentIndex = index.parent();
+
+	if (parentNode) {
+		int row = parentNode->children.indexOf(deleteNode);
+		beginRemoveRows(parentIndex, row, row);
+		parentNode->children.removeAt(row);
+		endRemoveRows();
+	} else {
+		int row = rootNode->children.indexOf(deleteNode);
+		beginRemoveRows(QModelIndex(), row, row);
+		rootNode->children.removeAt(row);
+		endRemoveRows();
+	}
+
+	emit dataChanged(index.parent(), index.parent());
+
+	delete deleteNode;
 }
 
 QVariant ProjectTreeModel::data(const QModelIndex &index, int role) const

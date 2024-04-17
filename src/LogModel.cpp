@@ -2,13 +2,21 @@
 
 LogModel::LogModel(QObject* parent)
 	: QAbstractItemModel(parent) {
-	m_logs.append({ u8"1.0", u8"新增", u8"张三", u8"2024-04-12", u8"添加了新功能" });
-	m_logs.append({ u8"1.0", u8"修改", u8"李四", u8"2024-04-13", u8"修复了一个bug" });
-	m_logs.append({ u8"1.1", u8"删除", u8"王五", u8"2024-04-14", u8"移除了一个不必要的功能" });
 }
 
 LogModel::~LogModel()
 {
+}
+
+void LogModel::UpdataLog(const QString &path)
+{
+	beginInsertRows(QModelIndex(), m_logs.size(), m_logs.size() + 2);
+	m_logs.append({ u8"1.0", u8"新增", u8"张三", u8"2024-04-12", u8"添加了新功能" });
+	m_logs.append({ u8"1.0", u8"修改", u8"李四", u8"2024-04-13", u8"修复了一个bug" });
+	m_logs.append({ u8"1.1", u8"删除", u8"王五", u8"2024-04-14", u8"移除了一个不必要的功能" });
+	endInsertRows();
+
+	emit dataChanged(index(0, 0), index(m_logs.size() - 1, columnCount() - 1));
 }
 
 int LogModel::rowCount(const QModelIndex &parent) const {

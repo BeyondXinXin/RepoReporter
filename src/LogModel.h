@@ -1,4 +1,4 @@
-#ifndef LOGMODEL_H
+﻿#ifndef LOGMODEL_H
 #define LOGMODEL_H
 
 #include <QAbstractItemModel>
@@ -10,6 +10,8 @@ class LogModel : public QAbstractItemModel
 public:
 	explicit LogModel(QObject *parent = nullptr);
 	~LogModel() override;
+
+	void UpdataLog(const QString& path);
 
 	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;

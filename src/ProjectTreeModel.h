@@ -15,6 +15,7 @@ public:
 	~ProjectTreeModel() override;
 
 	bool InsertData(const QModelIndex &index, QString name);
+	bool DeleteData(const QModelIndex &index);
 
 	QVariant data(const QModelIndex &index, int role) const override;
 	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
@@ -39,11 +40,16 @@ private:
 		QString name;
 		QVector<Node *> children;
 		Node *parentNode;
+		QString path;
 
 		Node(const QString &name, Node *parent = nullptr)
 			: name(name)
 			, parentNode(parent)
-		{}
+		{
+			if(parentNode!= nullptr){
+				parentNode->children.append(this);
+			}
+		}
 		~Node() { qDeleteAll(children); }
 	};
 

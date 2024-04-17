@@ -9,8 +9,12 @@ class ProjectTreeModel;
 class ProjectTreeView : public QTreeView
 {
 	Q_OBJECT
+
 public:
 	ProjectTreeView(QWidget *parent = nullptr);
+
+Q_SIGNALS:
+	void SgnSelectPathChange(const QString& path);
 
 protected:
 	void contextMenuEvent(QContextMenuEvent *event) override;
@@ -18,9 +22,11 @@ protected:
 
 private slots:
 	void AddProject();
+	void DeleteProject();
 
 private:
 	QAction * m_AddAction;
+	QAction * m_DeleteAction;
 	ProjectTreeModel * m_Model;
 };
 
