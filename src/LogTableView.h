@@ -13,6 +13,8 @@ public:
 
 	LogTableView(QWidget* parent = nullptr);
 
+	void ChangeProPath(const QString& path);
+
 protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;

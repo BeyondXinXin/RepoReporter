@@ -22,14 +22,19 @@ ProjectTreeView::ProjectTreeView(QWidget* parent)
 	setModel(m_Model);
 	show();
 
-	setDragEnabled(true);
-	setAcceptDrops(true);
-	setDragDropMode(QAbstractItemView::InternalMove);
-	setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 	header()->setVisible(false);
 	header()->resizeSection(0, 200);
 	header()->setSectionResizeMode(0, QHeaderView::Stretch);
+
+	setDragEnabled(true);
+	setAcceptDrops(true);
+	setDragDropMode(QAbstractItemView::InternalMove);
+	setEditTriggers(QAbstractItemView::NoEditTriggers);
+	setSelectionMode(QAbstractItemView::SingleSelection);
+	selectionModel()->connect(
+		selectionModel(), &QItemSelectionModel::selectionChanged,
+		this, &ProjectTreeView::SlotSelectionChanged);
 }
 
 void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
@@ -75,4 +80,16 @@ void ProjectTreeView::DeleteProject()
 	QModelIndex currentIndex = selectedIndexes().first();
 
 	m_Model->DeleteData(currentIndex);
+}
+
+void ProjectTreeView::SlotSelectionChanged(
+	const QItemSelection& selected, const QItemSelection& deselected)
+{
+	Q_UNUSED(deselected)
+
+	QModelIndexList indexes = selected.indexes();
+
+	if (!indexes.isEmpty()) {
+		emit SgnSelectPathChange(m_Model->GetIndexPath(indexes.first()));
+	}
 }

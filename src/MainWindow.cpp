@@ -13,6 +13,9 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->splitter->setSizes({ 250, 1000 });
 
 	move(0, 0);
+	
+	connect(ui->projectTreeView,&ProjectTreeView::SgnSelectPathChange,
+			ui->logTableView,&LogTableView::ChangeProPath);
 }
 
 MainWindow::~MainWindow()

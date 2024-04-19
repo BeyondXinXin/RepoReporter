@@ -24,6 +24,8 @@ public:
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
+	QString GetIndexPath(const QModelIndex& index)const;
+
 private:
 
 	bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
@@ -39,24 +41,17 @@ private:
 	{
 		QString name;
 		QVector<Node *>children;
+
 		Node* parentNode;
 		QString path;
 
-		Node(const QString& name, Node * parent = nullptr)
-			: name(name)
-			  , parentNode(parent)
-		{
-			if (parentNode != nullptr) {
-				parentNode->children.append(this);
-			}
-		}
-		~Node()
-		{
-			qDeleteAll(children);
-		}
+		Node(const QString& name, Node * parent = nullptr);
+		~Node();
 	};
 
-	Node rootNode;
+private:
+
+	Node* m_RootNode;
 };
 
 

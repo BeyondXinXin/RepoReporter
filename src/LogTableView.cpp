@@ -25,6 +25,11 @@ LogTableView::LogTableView(QWidget* parent)
 	show();
 }
 
+void LogTableView::ChangeProPath(const QString &path)
+{
+	m_Model->UpdataLog(path);
+}
+
 void LogTableView::contextMenuEvent(QContextMenuEvent* event)
 {
 	QMenu menu(this);
@@ -35,5 +40,5 @@ void LogTableView::contextMenuEvent(QContextMenuEvent* event)
 
 void LogTableView::AddProject()
 {
-	m_Model->UpdataLog("111");
+
 }

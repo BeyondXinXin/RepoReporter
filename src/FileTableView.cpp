@@ -26,4 +26,5 @@ void FileTableView::contextMenuEvent(QContextMenuEvent* event)
 
 void FileTableView::AddProject()
 {
+	
 }
