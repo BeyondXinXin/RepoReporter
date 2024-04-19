@@ -9,11 +9,11 @@
 
 #include "ProjectTreeModel.h"
 
-ProjectTreeView::ProjectTreeView(QWidget *parent)
+ProjectTreeView::ProjectTreeView(QWidget* parent)
 	: QTreeView(parent)
 {
 	m_AddAction = new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
-	connect(m_AddAction, &QAction::triggered, this, &ProjectTreeView::AddProject);
+	connect(m_AddAction,    &QAction::triggered, this, &ProjectTreeView::AddProject);
 
 	m_DeleteAction = new QAction(QIcon(":/icons/delete.png"), tr(u8"删除项目"), this);
 	connect(m_DeleteAction, &QAction::triggered, this, &ProjectTreeView::DeleteProject);
@@ -32,9 +32,10 @@ ProjectTreeView::ProjectTreeView(QWidget *parent)
 	header()->setSectionResizeMode(0, QHeaderView::Stretch);
 }
 
-void ProjectTreeView::contextMenuEvent(QContextMenuEvent *event)
+void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
 {
 	QMenu menu(this);
+
 	if (selectedIndexes().isEmpty()) {
 		menu.addAction(m_AddAction);
 	} else {
@@ -44,9 +45,10 @@ void ProjectTreeView::contextMenuEvent(QContextMenuEvent *event)
 	menu.exec(event->globalPos());
 }
 
-void ProjectTreeView::mouseReleaseEvent(QMouseEvent *event)
+void ProjectTreeView::mouseReleaseEvent(QMouseEvent* event)
 {
 	QTreeView::mouseReleaseEvent(event);
+
 	if (!indexAt(event->pos()).isValid()) {
 		clearSelection();
 	}
@@ -55,6 +57,7 @@ void ProjectTreeView::mouseReleaseEvent(QMouseEvent *event)
 void ProjectTreeView::AddProject()
 {
 	QModelIndex currentIndex;
+
 	if (selectedIndexes().isEmpty()) {
 		currentIndex = QModelIndex();
 	} else {
@@ -69,7 +72,7 @@ void ProjectTreeView::AddProject()
 
 void ProjectTreeView::DeleteProject()
 {
-	QModelIndex currentIndex= selectedIndexes().first();
+	QModelIndex currentIndex = selectedIndexes().first();
+
 	m_Model->DeleteData(currentIndex);
 }
-

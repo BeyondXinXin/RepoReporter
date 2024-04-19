@@ -4,10 +4,10 @@
 
 #include "FileModel.h"
 
-FileTableView::FileTableView(QWidget * parent)
+FileTableView::FileTableView(QWidget* parent)
 	: QTableView(parent)
 {
-	m_Model= new FileModel(this);
+	m_Model = new FileModel(this);
 	setModel(m_Model);
 
 	setDragEnabled(false);
@@ -20,12 +20,10 @@ FileTableView::FileTableView(QWidget * parent)
 	show();
 }
 
-void FileTableView::contextMenuEvent(QContextMenuEvent * event)
+void FileTableView::contextMenuEvent(QContextMenuEvent* event)
 {
-
 }
 
 void FileTableView::AddProject()
 {
-	
 }

@@ -6,21 +6,24 @@
 
 class FileModel;
 
-class FileTableView : public QTableView
-{
+class FileTableView : public QTableView {
 	Q_OBJECT
 
 public:
-	FileTableView(QWidget *parent = nullptr);
-	
+
+	FileTableView(QWidget* parent = nullptr);
+
 protected:
-	void contextMenuEvent(QContextMenuEvent *event) override;
-	
+
+	void contextMenuEvent(QContextMenuEvent* event) override;
+
 private slots:
+
 	void AddProject();
-	
+
 private:
-	QAction * m_AddAction;
+
+	QAction* m_AddAction;
 	FileModel* m_Model;
 };
 

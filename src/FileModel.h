@@ -1,14 +1,14 @@
-#ifndef FileModel_H
+﻿#ifndef FileModel_H
 #define FileModel_H
 
 #include <QAbstractItemModel>
 #include <QMap>
 
-class FileModel : public QAbstractItemModel
-{
+class FileModel : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
+
 	explicit FileModel(QObject* parent = nullptr);
 	~FileModel() override;
 
@@ -20,9 +20,8 @@ public:
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 private:
-	QList<QPair<QString, QString>> m_files;
+
+	QList<QPair<QString, QString> >m_files;
 };
 
 #endif // LOGMODEL_H
-
-
