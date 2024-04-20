@@ -52,7 +52,7 @@ void LogTableView::SlotSelectionChanged(
 	QModelIndexList indexes = selected.indexes();
 
 	if (!indexes.isEmpty()) {
-		QList<int> vers;
+		QList<QString> vers;
 
 		foreach(auto index, indexes)
 		{

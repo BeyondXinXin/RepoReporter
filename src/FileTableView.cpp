@@ -20,7 +20,7 @@ FileTableView::FileTableView(QWidget* parent)
 	show();
 }
 
-void FileTableView::ChangeLog(const QList<int> &versions)
+void FileTableView::ChangeLog(const QList<QString> &versions)
 {
 	m_Model->UpdataFile(versions);
 }

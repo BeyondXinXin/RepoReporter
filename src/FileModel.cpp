@@ -9,7 +9,7 @@ FileModel::FileModel(QObject* parent)
 FileModel::~FileModel()
 {}
 
-void FileModel::UpdataFile(const QList<int>& versions)
+void FileModel::UpdataFile(const QList<QString>& versions)
 {
 	beginResetModel();
 	m_files.clear();

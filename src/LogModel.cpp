@@ -1,5 +1,8 @@
 ﻿#include "LogModel.h"
 
+#include "VersionControlManager.h"
+
+
 LogModel::LogModel(QObject* parent)
 	: QAbstractItemModel(parent)
 {}
@@ -9,23 +12,52 @@ LogModel::~LogModel()
 
 void LogModel::UpdataLog(const QString& path)
 {
+	static int i = 0;
+
 	beginResetModel();
 	m_Logs.clear();
 
-	// 添加新数据
-	m_Logs.append({ 1, u8"新增", u8"张三", u8"2024-04-12", path });
-	m_Logs.append({ 2, u8"修改", u8"李四", u8"2024-04-13", path });
-	m_Logs.append({ 3, u8"删除", u8"王五", u8"2024-04-14", path });
+	switch (i % 5) {
+	case 0:
+
+		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\RepoReporter");
+		break;
+
+	case 1:
+
+		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\qt-creator-settings");
+		break;
+
+	case 2:
+
+		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\BlogDemo");
+		break;
+
+	case 3:
+
+		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\RepoReporter");
+		break;
+
+	case 4:
+
+		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\YiHangPavilion");
+		break;
+
+	default:
+		break;
+	}
+
 
 	endResetModel();
+	i++;
 }
 
-int LogModel::GetIndexVersion(const QModelIndex& index) const
+QString LogModel::GetIndexVersion(const QModelIndex& index) const
 {
 	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Logs.size())) {
 		return -1;
 	}
-	const LogEntry& entry = m_Logs[index.row()];
+	const VCLogEntry& entry = m_Logs[index.row()];
 
 	return entry.version;
 }
@@ -49,16 +81,23 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 		return QVariant();
 
 	if (role == Qt::DisplayRole) {
-		const LogEntry& entry = m_Logs[index.row()];
+		const VCLogEntry& entry = m_Logs[index.row()];
 
 		switch (index.column()) {
 		case 0: return entry.version;
 
-		case 1: return entry.operation;
+		case 1: {
+			QStringList operationStrings;
+
+			for (const FileOperation& operation : entry.operations) {
+				operationStrings.append(FileOperationToString(operation));
+			}
+			return operationStrings.join(", ");
+		}
 
 		case 2: return entry.author;
 
-		case 3: return entry.date;
+		case 3: return entry.date.toString("yyyy/M/d hh:mm:ss");
 
 		case 4: return entry.message;
 

@@ -3,6 +3,8 @@
 
 #include <QAbstractItemModel>
 
+#include "vcdata/VCSDataStructures.h"
+
 class LogModel : public QAbstractItemModel {
 	Q_OBJECT
 
@@ -12,8 +14,8 @@ public:
 	~LogModel() override;
 
 	void UpdataLog(const QString& path);
-	
-	int GetIndexVersion(const QModelIndex& index)const;
+
+	QString GetIndexVersion(const QModelIndex& index)const;
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -26,14 +28,7 @@ public:
 
 private:
 
-	struct LogEntry {
-		int version;
-		QString operation;
-		QString author;
-		QString date;
-		QString message;
-	};
-	QList<LogEntry>m_Logs; // 日志数据
+	QList<VCLogEntry>m_Logs;
 };
 
 #endif // LOGMODEL_H
