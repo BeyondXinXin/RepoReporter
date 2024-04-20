@@ -15,6 +15,10 @@ public:
 
 	void ChangeProPath(const QString& path);
 
+Q_SIGNALS:
+
+	void SgnChangeSelectLog(const QList<int>& versions);
+
 protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;
@@ -22,6 +26,7 @@ protected:
 private slots:
 
 	void AddProject();
+	void SlotSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
 private:
 

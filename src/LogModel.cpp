@@ -10,14 +10,24 @@ LogModel::~LogModel()
 void LogModel::UpdataLog(const QString& path)
 {
 	beginResetModel();
-	m_logs.clear();
+	m_Logs.clear();
 
 	// 添加新数据
-	m_logs.append({ u8"1.0", u8"新增", u8"张三", u8"2024-04-12", path });
-	m_logs.append({ u8"1.0", u8"修改", u8"李四", u8"2024-04-13", path });
-	m_logs.append({ u8"1.1", u8"删除", u8"王五", u8"2024-04-14", path });
+	m_Logs.append({ 1, u8"新增", u8"张三", u8"2024-04-12", path });
+	m_Logs.append({ 2, u8"修改", u8"李四", u8"2024-04-13", path });
+	m_Logs.append({ 3, u8"删除", u8"王五", u8"2024-04-14", path });
 
 	endResetModel();
+}
+
+int LogModel::GetIndexVersion(const QModelIndex& index) const
+{
+	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Logs.size())) {
+		return -1;
+	}
+	const LogEntry& entry = m_Logs[index.row()];
+
+	return entry.version;
 }
 
 int LogModel::rowCount(const QModelIndex& parent) const
@@ -25,7 +35,7 @@ int LogModel::rowCount(const QModelIndex& parent) const
 	if (parent.isValid())
 		return 0;  // 仅支持顶层节点
 
-	return m_logs.size();
+	return m_Logs.size();
 }
 
 int LogModel::columnCount(const QModelIndex& parent) const
@@ -39,7 +49,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 		return QVariant();
 
 	if (role == Qt::DisplayRole) {
-		const LogEntry& entry = m_logs[index.row()];
+		const LogEntry& entry = m_Logs[index.row()];
 
 		switch (index.column()) {
 		case 0: return entry.version;

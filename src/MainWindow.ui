@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>739</width>
-    <height>380</height>
+    <width>1058</width>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -108,7 +108,7 @@
               <bool>true</bool>
              </property>
             </widget>
-            <widget class="FileTableView" name="tableWidget_2"/>
+            <widget class="FileTableView" name="fileTableView"/>
            </widget>
           </item>
          </layout>

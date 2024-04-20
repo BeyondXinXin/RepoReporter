@@ -20,6 +20,11 @@ FileTableView::FileTableView(QWidget* parent)
 	show();
 }
 
+void FileTableView::ChangeLog(const QList<int> &versions)
+{
+	m_Model->UpdataFile(versions);
+}
+
 void FileTableView::contextMenuEvent(QContextMenuEvent* event)
 {
 }

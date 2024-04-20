@@ -1,15 +1,23 @@
 ﻿#include "FileModel.h"
 
+#include <QDebug>
+
 FileModel::FileModel(QObject* parent)
 	: QAbstractItemModel(parent)
-{
-	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file1.txt"), QString::fromUtf8(u8"操作1")));
-	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file2.txt"), QString::fromUtf8(u8"操作2")));
-	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file3.txt"), QString::fromUtf8(u8"操作3")));
-}
+{}
 
 FileModel::~FileModel()
 {}
+
+void FileModel::UpdataFile(const QList<int>& versions)
+{
+	beginResetModel();
+	m_files.clear();
+	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file1.txt"), QString::fromUtf8(u8"操作1")));
+	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file2.txt"), QString::fromUtf8(u8"操作2")));
+	m_files.append(QPair<QString, QString>(QString::fromUtf8(u8"path/to/file3.txt"), QString::fromUtf8(u8"操作3")));
+	endResetModel();
+}
 
 QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) const
 {

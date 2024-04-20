@@ -12,6 +12,8 @@ public:
 	~LogModel() override;
 
 	void UpdataLog(const QString& path);
+	
+	int GetIndexVersion(const QModelIndex& index)const;
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -25,13 +27,13 @@ public:
 private:
 
 	struct LogEntry {
-		QString version;
+		int version;
 		QString operation;
 		QString author;
 		QString date;
 		QString message;
 	};
-	QList<LogEntry>m_logs; // 日志数据
+	QList<LogEntry>m_Logs; // 日志数据
 };
 
 #endif // LOGMODEL_H

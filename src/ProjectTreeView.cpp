@@ -22,7 +22,6 @@ ProjectTreeView::ProjectTreeView(QWidget* parent)
 	setModel(m_Model);
 	show();
 
-
 	header()->setVisible(false);
 	header()->resizeSection(0, 200);
 	header()->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -32,6 +31,7 @@ ProjectTreeView::ProjectTreeView(QWidget* parent)
 	setDragDropMode(QAbstractItemView::InternalMove);
 	setEditTriggers(QAbstractItemView::NoEditTriggers);
 	setSelectionMode(QAbstractItemView::SingleSelection);
+
 	selectionModel()->connect(
 		selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &ProjectTreeView::SlotSelectionChanged);

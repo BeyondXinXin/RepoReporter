@@ -22,10 +22,12 @@ LogTableView::LogTableView(QWidget* parent)
 	horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 
-	show();
+	selectionModel()->connect(
+		selectionModel(), &QItemSelectionModel::selectionChanged,
+		this, &LogTableView::SlotSelectionChanged);
 }
 
-void LogTableView::ChangeProPath(const QString &path)
+void LogTableView::ChangeProPath(const QString& path)
 {
 	m_Model->UpdataLog(path);
 }
@@ -40,5 +42,22 @@ void LogTableView::contextMenuEvent(QContextMenuEvent* event)
 
 void LogTableView::AddProject()
 {
+}
 
+void LogTableView::SlotSelectionChanged(
+	const QItemSelection& selected, const QItemSelection& deselected)
+{
+	Q_UNUSED(deselected)
+
+	QModelIndexList indexes = selected.indexes();
+
+	if (!indexes.isEmpty()) {
+		QList<int> vers;
+
+		foreach(auto index, indexes)
+		{
+			vers << m_Model->GetIndexVersion(index);
+		}
+		emit SgnChangeSelectLog(vers);
+	}
 }

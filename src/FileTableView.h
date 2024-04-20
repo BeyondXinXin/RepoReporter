@@ -12,6 +12,8 @@ class FileTableView : public QTableView {
 public:
 
 	FileTableView(QWidget* parent = nullptr);
+	
+	void ChangeLog(const QList<int>& versions);
 
 protected:
 

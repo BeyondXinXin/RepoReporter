@@ -11,6 +11,8 @@ public:
 
 	explicit FileModel(QObject* parent = nullptr);
 	~FileModel() override;
+	
+	void UpdataFile(const QList<int>& versions);
 
 	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 	QModelIndex parent(const QModelIndex& child) const override;
