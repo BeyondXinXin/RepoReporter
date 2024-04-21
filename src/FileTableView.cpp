@@ -14,6 +14,7 @@ FileTableView::FileTableView(QWidget* parent)
 	setAcceptDrops(false);
 	setDragDropMode(QAbstractItemView::NoDragDrop);
 
+	verticalHeader()->setDefaultSectionSize(10);
 	horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 

@@ -2,6 +2,7 @@
 
 #include <QHeaderView>
 #include <QMenu>
+#include <QTableWidget>
 #include <QContextMenuEvent>
 
 #include "LogModel.h"
@@ -19,12 +20,16 @@ LogTableView::LogTableView(QWidget* parent)
 	setAcceptDrops(false);
 	setDragDropMode(QAbstractItemView::NoDragDrop);
 
+	verticalHeader()->setDefaultSectionSize(10);
 	horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
+	horizontalHeader()->setHighlightSections(false);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 
 	selectionModel()->connect(
 		selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &LogTableView::SlotSelectionChanged);
+
+	setShowGrid(false);
 }
 
 void LogTableView::ChangeProPath(const QString& path)
