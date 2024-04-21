@@ -28,7 +28,7 @@ public:
 
 private:
 
-	QList<VCLogEntry>m_Logs;
+	QList<VCLogEntry> m_Logs;
 };
 
 #endif // LOGMODEL_H

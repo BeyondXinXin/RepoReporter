@@ -6,6 +6,8 @@
 #include <QVariant>
 #include <QMimeData>
 
+#include "vcdata/VCSDataStructures.h"
+
 class ProjectTreeModel : public QAbstractItemModel {
 	Q_OBJECT
 
@@ -14,7 +16,7 @@ public:
 	explicit ProjectTreeModel(QObject* parent = nullptr);
 	~ProjectTreeModel() override;
 
-	bool InsertData(const QModelIndex& index, QString name);
+	bool InsertData(const QModelIndex& index, VCProjectPath newData);
 	bool DeleteData(const QModelIndex& index);
 
 	QVariant data(const QModelIndex& index, int role) const override;
@@ -39,13 +41,11 @@ private:
 
 	struct Node
 	{
-		QString name;
-		QVector<Node *>children;
+		VCProjectPath data;
+		QVector<Node *> children;
+		Node* parent;
 
-		Node* parentNode;
-		QString path;
-
-		Node(const QString& name, Node * parent = nullptr);
+		Node(const VCProjectPath& inData, Node * parent = nullptr);
 		~Node();
 	};
 
@@ -53,9 +53,6 @@ private:
 
 	Node* m_RootNode;
 };
-
-
-
 
 
 #endif // PROJECTTREEMODE_H

@@ -8,7 +8,7 @@
 class VersionControlManager {
 public:
 
-	static QList<VCLogEntry>FetchLog(const QString& repoPath);
+	static QList<VCLogEntry> FetchLog(const QString& repoPath);
 	static QString GetChangesForVersion(const QString& repoPath, int version);
 };
 

@@ -11,7 +11,7 @@ public:
 
 	explicit FileModel(QObject* parent = nullptr);
 	~FileModel() override;
-	
+
 	void UpdataFile(const QList<QString>& versions);
 
 	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
@@ -23,7 +23,7 @@ public:
 
 private:
 
-	QList<QPair<QString, QString> >m_files;
+	QList<QPair<QString, QString> > m_files;
 };
 
 #endif // LOGMODEL_H

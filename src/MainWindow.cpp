@@ -10,10 +10,7 @@ MainWindow::MainWindow(QWidget* parent)
 	, ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	ui->splitter->setSizes({ 300, 1300 });
-
-	resize(1600, 1000);
-	move(0, 0);
+	ui->splitter->setSizes({ 400, 1000 });
 
 	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
 	        ui->logTableView, &LogTableView::ChangeProPath);

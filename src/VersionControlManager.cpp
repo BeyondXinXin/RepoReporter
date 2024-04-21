@@ -5,7 +5,7 @@
 #include <QTimeZone>
 
 
-QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath)
+QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
 {
 	QList<VCLogEntry> logEntries;
 

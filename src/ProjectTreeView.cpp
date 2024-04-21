@@ -4,10 +4,15 @@
 #include <QIcon>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QPainter>
 #include <QStandardItem>
 #include <QHeaderView>
+#include <QIcon>
+#include <QApplication>
+#include <QPalette>
 
 #include "ProjectTreeModel.h"
+#include "AddProjectDialog.h"
 
 ProjectTreeView::ProjectTreeView(QWidget* parent)
 	: QTreeView(parent)
@@ -20,11 +25,11 @@ ProjectTreeView::ProjectTreeView(QWidget* parent)
 
 	m_Model = new ProjectTreeModel(this);
 	setModel(m_Model);
-	show();
+
+	setIndentation(20);
 
 	header()->setVisible(false);
-	header()->resizeSection(0, 200);
-	header()->setSectionResizeMode(0, QHeaderView::Stretch);
+	header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 	setDragEnabled(true);
 	setAcceptDrops(true);
@@ -41,9 +46,9 @@ void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
 {
 	QMenu menu(this);
 
-	if (selectedIndexes().isEmpty()) {
+	if (selectedIndexes().isEmpty())
 		menu.addAction(m_AddAction);
-	} else {
+	else {
 		menu.addAction(m_AddAction);
 		menu.addAction(m_DeleteAction);
 	}
@@ -54,30 +59,43 @@ void ProjectTreeView::mouseReleaseEvent(QMouseEvent* event)
 {
 	QTreeView::mouseReleaseEvent(event);
 
-	if (!indexAt(event->pos()).isValid()) {
+	if (!indexAt(event->pos()).isValid())
 		clearSelection();
-	}
 }
 
 void ProjectTreeView::AddProject()
 {
 	QModelIndex currentIndex;
 
-	if (selectedIndexes().isEmpty()) {
+	if (selectedIndexes().isEmpty())
 		currentIndex = QModelIndex();
-	} else {
-		currentIndex = selectedIndexes().first();
+	else {
+		QModelIndexList indexes = selectedIndexes();
+		currentIndex = indexes.first();
 	}
-	m_Model->InsertData(currentIndex, u8"Data " + QString::number(m_Model->rowCount()));
 
-	if (currentIndex.isValid()) {
-		expand(currentIndex);
+	AddProjectDialog dialog;
+	int result = dialog.exec();
+
+	if (result == QDialog::Accepted) {
+		VCProjectPath projectPath = dialog.GetProjectPathFromInput();
+
+		if (dialog.ProjectPathFromInputIsEmpty()) {
+			currentIndex = QModelIndex();
+		}
+
+		m_Model->InsertData(currentIndex, projectPath);
+
+		if (currentIndex.isValid()) {
+			expand(currentIndex);
+		}
 	}
 }
 
 void ProjectTreeView::DeleteProject()
 {
-	QModelIndex currentIndex = selectedIndexes().first();
+	QModelIndexList indexes = selectedIndexes();
+	QModelIndex     currentIndex = indexes.first();
 
 	m_Model->DeleteData(currentIndex);
 }
@@ -89,7 +107,6 @@ void ProjectTreeView::SlotSelectionChanged(
 
 	QModelIndexList indexes = selected.indexes();
 
-	if (!indexes.isEmpty()) {
+	if (!indexes.isEmpty())
 		emit SgnSelectPathChange(m_Model->GetIndexPath(indexes.first()));
-	}
 }

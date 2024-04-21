@@ -1,10 +1,12 @@
 ﻿#include "ProjectTreeModel.h"
 
 #include <QDataStream>
+#include <QStyle>
+#include <QApplication>
 
 ProjectTreeModel::ProjectTreeModel(QObject* parent)
 	: QAbstractItemModel(parent),
-	m_RootNode(new Node("Root"))
+	m_RootNode(new Node(VCProjectPath("Root")))
 {}
 
 ProjectTreeModel::~ProjectTreeModel()
@@ -12,29 +14,31 @@ ProjectTreeModel::~ProjectTreeModel()
 	delete m_RootNode;
 }
 
-bool ProjectTreeModel::InsertData(const QModelIndex& index, QString name)
+bool ProjectTreeModel::InsertData(const QModelIndex& index, VCProjectPath newData)
 {
-	if (!index.isValid()) {
-		beginInsertRows(QModelIndex(), m_RootNode->children.size(), m_RootNode->children.size());
-		Node* child = new Node(name, m_RootNode);
+	QModelIndex parentIndex;
+	Node* parentNode;
+	int   row;
 
-		Q_UNUSED(child)
-		endInsertRows();
-		return true;
+	if (index.isValid()) {
+		parentNode = static_cast<Node *>(index.internalPointer());
+
+		if (parentNode->parent != m_RootNode) {
+			return false;
+		}
+		row = rowCount(index);
+		parentIndex = index;
+	} else {
+		parentNode = m_RootNode;
+		row = m_RootNode->children.size();
+		parentIndex = QModelIndex();
 	}
 
-	beginInsertRows(index, rowCount(index), rowCount(index));
-	Node* parentNode = static_cast<Node *>(index.internalPointer());
+	beginInsertRows(parentIndex, row, row);
 
-	if (parentNode->parentNode != m_RootNode) {
-		endInsertRows();
-		return false;
-	}
-	Node* child = new Node(name, parentNode);
-
+	Node* child = new Node(newData, parentNode);
 	Q_UNUSED(child)
 	endInsertRows();
-
 	return true;
 }
 
@@ -50,7 +54,7 @@ bool ProjectTreeModel::DeleteData(const QModelIndex& index)
 		return false;
 	}
 
-	Node* parentNode = deleteNode->parentNode;
+	Node* parentNode = deleteNode->parent;
 	QModelIndex parentIndex = index.parent();
 
 	if (parentNode) {
@@ -70,19 +74,44 @@ bool ProjectTreeModel::DeleteData(const QModelIndex& index)
 	emit dataChanged(index.parent(), index.parent());
 
 	delete deleteNode;
+	return true;
 }
+
+// if (!index.isValid()) {
+// return QVariant();
+// }
+
+// if (role != Qt::DisplayRole) {
+// return QVariant();
+// }
+
+// Node* node = static_cast<Node *>(index.internalPointer());
+// return node->data.name;
 
 QVariant ProjectTreeModel::data(const QModelIndex& index, int role) const
 {
-	if (!index.isValid())
+	if (!index.isValid() || (index.model() != this))
 		return QVariant();
 
-	if (role != Qt::DisplayRole)
-		return QVariant();
+	if (index.column() == 0) {
+		if ((role == Qt::EditRole) || (role == Qt::DisplayRole)) {
+			Node* node = static_cast<Node *>(index.internalPointer());
+			return node->data.name;
+		} else if (role == Qt::DecorationRole) {
+			Node* node = static_cast<Node *>(index.internalPointer());
 
-	Node* node = static_cast<Node *>(index.internalPointer());
+			if (node->data.path.isEmpty()) {
+				return QVariant::fromValue(QApplication::style()->standardIcon(QStyle::SP_DirIcon));
+			}
+			return QVariant::fromValue(QApplication::style()->standardIcon(QStyle::SP_FileIcon));
+		} else if (role == Qt::TextAlignmentRole) {
+			if (index.column() == 1) {
+				return QVariant(Qt::AlignTrailing | Qt::AlignVCenter);
+			}
+		}
+	}
 
-	return node->name;
+	return QVariant();
 }
 
 Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex& index) const
@@ -127,16 +156,16 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex& index) const
 	}
 
 	Node* childNode = static_cast<Node *>(index.internalPointer());
-	Node* parentNode = childNode->parentNode;
+	Node* parentNode = childNode->parent;
 
 	if (parentNode == m_RootNode) {
 		return QModelIndex();
 	}
 
-	int row = 0; // parentNode->children.indexOf(childNode);
+	int row = 0;
 
-	if (parentNode->parentNode) {
-		row = parentNode->parentNode->children.indexOf(parentNode);
+	if (parentNode->parent) {
+		row = parentNode->parent->children.indexOf(parentNode);
 	}
 	return createIndex(row, 0, parentNode);
 }
@@ -169,7 +198,8 @@ QString ProjectTreeModel::GetIndexPath(const QModelIndex& index) const
 
 	Node* node = static_cast<Node *>(index.internalPointer());
 
-	return node->name;
+
+	return node->data.name;
 }
 
 bool ProjectTreeModel::dropMimeData(
@@ -188,6 +218,7 @@ bool ProjectTreeModel::dropMimeData(
 	if (column > 0) {
 		return false;
 	}
+
 	int beginRow;
 
 	if (row != -1) {
@@ -261,7 +292,7 @@ void ProjectTreeModel::ProjectTreeModel::MoveItem(
 		return;
 
 	// 在源节点的父节点中查找源节点的位置
-	Node* srcParentNode = srcNode->parentNode;
+	Node* srcParentNode = srcNode->parent;
 
 	if (!srcParentNode)
 		return;
@@ -281,16 +312,16 @@ void ProjectTreeModel::ProjectTreeModel::MoveItem(
 
 	beginInsertRows(targetIndex.parent(), targetRow, targetRow);
 	targetParentNode->children.insert(targetRow, srcNode);
-	srcNode->parentNode = targetParentNode;
+	srcNode->parent = targetParentNode;
 	endInsertRows();
 }
 
-ProjectTreeModel::Node::Node(const QString& name, Node* parent)
-	: name(name),
-	parentNode(parent)
+ProjectTreeModel::Node::Node(const VCProjectPath& inData, Node* parent)
+	: data(inData),
+	parent(parent)
 {
-	if (parentNode != nullptr) {
-		parentNode->children.append(this);
+	if (parent != nullptr) {
+		parent->children.append(this);
 	}
 }
 
