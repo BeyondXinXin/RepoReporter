@@ -28,6 +28,10 @@ public:
 
 	QString GetIndexPath(const QModelIndex& index)const;
 
+Q_SIGNALS:
+
+	void SgnItemMoved(const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex);
+
 private:
 
 	bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
@@ -35,14 +39,14 @@ private:
 	QStringList mimeTypes() const override;
 	QMimeData* mimeData(const QModelIndexList& indexes) const override;
 
-	void MoveItem(const QModelIndex& srcIndex, const QModelIndex& targetIndex);
+	void MoveItem(const QModelIndex& srcIndex, const QModelIndex& targetParentIndex, const int& targetRrow);
 
 private:
 
 	struct Node
 	{
 		VCProjectPath data;
-		QVector<Node *> children;
+		QList<Node *> children;
 		Node* parent;
 
 		Node(const VCProjectPath& inData, Node * parent = nullptr);

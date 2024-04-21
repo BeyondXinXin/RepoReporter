@@ -3,6 +3,8 @@
 #include <QDataStream>
 #include <QStyle>
 #include <QApplication>
+#include <QTreeView>
+#include <QStack>
 
 ProjectTreeModel::ProjectTreeModel(QObject* parent)
 	: QAbstractItemModel(parent),
@@ -35,10 +37,10 @@ bool ProjectTreeModel::InsertData(const QModelIndex& index, VCProjectPath newDat
 	}
 
 	beginInsertRows(parentIndex, row, row);
-
 	Node* child = new Node(newData, parentNode);
 	Q_UNUSED(child)
 	endInsertRows();
+
 	return true;
 }
 
@@ -76,17 +78,6 @@ bool ProjectTreeModel::DeleteData(const QModelIndex& index)
 	delete deleteNode;
 	return true;
 }
-
-// if (!index.isValid()) {
-// return QVariant();
-// }
-
-// if (role != Qt::DisplayRole) {
-// return QVariant();
-// }
-
-// Node* node = static_cast<Node *>(index.internalPointer());
-// return node->data.name;
 
 QVariant ProjectTreeModel::data(const QModelIndex& index, int role) const
 {
@@ -203,44 +194,38 @@ QString ProjectTreeModel::GetIndexPath(const QModelIndex& index) const
 }
 
 bool ProjectTreeModel::dropMimeData(
-	const QMimeData* data,
-	Qt::DropAction action,
-	int row,
-	int column,
-	const QModelIndex& parent)
+	const QMimeData* data, Qt::DropAction action,
+	int targetRow, int targetColumn, const QModelIndex& parent)
 {
-	if (action == Qt::IgnoreAction)
-		return true;
-
-	if (!data->hasFormat("text/plain"))
-		return false;
-
-	if (column > 0) {
+	if ((action == Qt::IgnoreAction) || !data->hasFormat("text/plain")) {
 		return false;
 	}
 
-	int beginRow;
-
-	if (row != -1) {
-		beginRow = row;
-	} else if (parent.isValid()) {
-		beginRow = parent.row();
-	} else {
-		beginRow = rowCount(QModelIndex());
+	if (-1 == targetColumn) {
+		targetColumn = 0;
+	}
+	if (-1 == targetRow) {
+		targetRow = 0;
 	}
 
 	QByteArray  encodedData = data->data("text/plain");
 	QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
+	QList<QPair<int, int> > srcRowTree;
 	while (!stream.atEnd()) {
-		int sourceRow, sourceColumn;
-
-		stream >> sourceRow >> sourceColumn;
-		QModelIndex sourceIndex = index(sourceRow, sourceColumn, QModelIndex());
-
-		MoveItem(sourceIndex, parent.child(beginRow, column));
-		beginRow++;
+		int srcRow, srcColumn;
+		stream >> srcRow >> srcColumn;
+		srcRowTree.append(QPair<int, int>(srcRow, srcColumn));
 	}
+
+	std::reverse(srcRowTree.begin(), srcRowTree.end());
+
+	QModelIndex sourceIndex = index(srcRowTree.at(0).first, srcRowTree.at(0).second, QModelIndex());
+	for (int i = 1; i < srcRowTree.size(); i++) {
+		sourceIndex = index(srcRowTree.at(i).first, srcRowTree.at(i).second, sourceIndex);
+	}
+
+	MoveItem(sourceIndex, parent, targetRow);
 
 	return true;
 }
@@ -261,59 +246,62 @@ QStringList ProjectTreeModel::mimeTypes() const
 QMimeData * ProjectTreeModel::mimeData(const QModelIndexList& indexes) const
 {
 	QMimeData* mimeData = new QMimeData();
-
-	QByteArray  encodedData;
-	QDataStream stream(&encodedData, QIODevice::WriteOnly);
-
-	foreach(const QModelIndex& index, indexes)
-	{
+	if (1 == indexes.size()) {
+		QModelIndex index = indexes.first();
 		if (index.isValid()) {
+			QByteArray  encodedData;
+			QDataStream stream(&encodedData, QIODevice::WriteOnly);
 			stream << index.row();
 			stream << index.column();
+
+			QModelIndex parentIndex = index.parent();
+
+			while (parentIndex.isValid()) {
+				stream << parentIndex.row();
+				stream << parentIndex.column();
+				parentIndex = parentIndex.parent();
+			}
+			mimeData->setData("text/plain", encodedData);
 		}
 	}
-	mimeData->setData("text/plain", encodedData);
 	return mimeData;
 }
 
 void ProjectTreeModel::ProjectTreeModel::MoveItem(
-	const QModelIndex& srcIndex, const QModelIndex& targetIndex)
+	const QModelIndex& srcIndex, const QModelIndex& targetParentIndex, const int& targetRow)
 {
-	// 检查源索引和目标索引是否有效
-	if (!srcIndex.isValid() || !targetIndex.isValid())
+	if (!srcIndex.isValid()) {
 		return;
-
-	// 获取源节点和目标节点
+	}
+	QModelIndex srcParentIndex = srcIndex.parent();
 	Node* srcNode = static_cast<Node *>(srcIndex.internalPointer());
-	Node* targetParentNode = static_cast<Node *>(targetIndex.internalPointer());
-
-	// 检查目标节点是否有子节点列表
-	if (!targetParentNode)
-		return;
-
-	// 在源节点的父节点中查找源节点的位置
 	Node* srcParentNode = srcNode->parent;
+	Node* targetParentNode;
+	if (targetParentIndex.isValid()) {
+		targetParentNode = static_cast<Node *>(targetParentIndex.internalPointer());
+	} else {
+		targetParentNode = m_RootNode;
+	}
 
-	if (!srcParentNode)
+	if (!targetParentNode || !srcParentNode || !srcNode->children.isEmpty()) {
 		return;
+	}
 
 	int srcRow = srcParentNode->children.indexOf(srcNode);
-
-	if (srcRow == -1)
+	if (srcRow == -1) {
 		return;
+	}
 
-	// 从源节点的父节点中移除源节点
-	beginRemoveRows(srcIndex.parent(), srcRow, srcRow);
+	beginResetModel();
 	srcParentNode->children.removeAt(srcRow);
-	endRemoveRows();
-
-	// 插入源节点到目标节点的子节点列表中
-	int targetRow = targetIndex.row();
-
-	beginInsertRows(targetIndex.parent(), targetRow, targetRow);
 	targetParentNode->children.insert(targetRow, srcNode);
 	srcNode->parent = targetParentNode;
-	endInsertRows();
+	endResetModel();
+
+	QModelIndex targetIndex = index(targetRow, 0, targetParentIndex);
+	if (targetIndex.isValid()) {
+		emit SgnItemMoved(srcParentIndex, srcIndex.parent());
+	}
 }
 
 ProjectTreeModel::Node::Node(const VCProjectPath& inData, Node* parent)

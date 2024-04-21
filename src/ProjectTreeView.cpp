@@ -40,6 +40,9 @@ ProjectTreeView::ProjectTreeView(QWidget* parent)
 	selectionModel()->connect(
 		selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &ProjectTreeView::SlotSelectionChanged);
+
+	connect(m_Model, &ProjectTreeModel::SgnItemMoved,
+	        this, &ProjectTreeView::SlotItemMoved);
 }
 
 void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
@@ -107,6 +110,13 @@ void ProjectTreeView::SlotSelectionChanged(
 
 	QModelIndexList indexes = selected.indexes();
 
-	if (!indexes.isEmpty())
+	if (!indexes.isEmpty()) {
 		emit SgnSelectPathChange(m_Model->GetIndexPath(indexes.first()));
+	}
+}
+
+void ProjectTreeView::SlotItemMoved(const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex)
+{
+	expand(oldParentIndex);
+	expand(newParentIndex);
 }

@@ -27,6 +27,7 @@ private slots:
 	void AddProject();
 	void DeleteProject();
 	void SlotSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+	void SlotItemMoved(const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex);
 
 private:
 
