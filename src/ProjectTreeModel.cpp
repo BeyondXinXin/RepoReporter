@@ -5,14 +5,21 @@
 #include <QApplication>
 #include <QTreeView>
 #include <QStack>
+#include <QJsonObject>
+#include <QFile>
+#include <QJsonDocument>
 
 ProjectTreeModel::ProjectTreeModel(QObject* parent)
 	: QAbstractItemModel(parent),
 	m_RootNode(new Node(VCProjectPath("Root")))
-{}
+{
+	m_FilePath = QStringLiteral("project_data.json");
+	LoadFromJson(m_FilePath);
+}
 
 ProjectTreeModel::~ProjectTreeModel()
 {
+	SaveToJson(m_FilePath);
 	delete m_RootNode;
 }
 
@@ -190,7 +197,56 @@ QString ProjectTreeModel::GetIndexPath(const QModelIndex& index) const
 	Node* node = static_cast<Node *>(index.internalPointer());
 
 
-	return node->data.name;
+	return node->data.path;
+}
+
+void ProjectTreeModel::ClearData()
+{
+	beginResetModel();
+	qDeleteAll(m_RootNode->children);
+	endResetModel();
+}
+
+bool ProjectTreeModel::SaveToJson(const QString& filePath) const
+{
+	QFile file(filePath);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		qInfo() << u8"无法打开文件进行写入:" << file.errorString();
+		return false;
+	}
+
+	QJsonArray jsonArray;
+	SaveNodeToJson(m_RootNode, jsonArray);
+
+	QJsonDocument jsonDoc(jsonArray);
+	file.write(jsonDoc.toJson());
+	file.close();
+
+	return true;
+}
+
+bool ProjectTreeModel::LoadFromJson(const QString& filePath)
+{
+	QFile file(filePath);
+	if (!file.open(QIODevice::ReadOnly)) {
+		qInfo() << u8"无法打开文件进行读取:" << file.errorString();
+		return false;
+	}
+
+	QByteArray jsonData = file.readAll();
+	QJsonDocument jsonDoc(QJsonDocument::fromJson(jsonData));
+	QJsonObject   obj = jsonDoc.array().first().toObject();
+
+	if (!obj.contains("name") || (obj["name"] != "Root")) {
+		return false;
+	}
+
+	ClearData();
+	beginResetModel();
+	QJsonArray childrenArray = obj["children"].toArray();
+	LoadNodeFromJson(childrenArray, m_RootNode);
+	endResetModel();
+	return true;
 }
 
 bool ProjectTreeModel::dropMimeData(
@@ -301,6 +357,37 @@ void ProjectTreeModel::ProjectTreeModel::MoveItem(
 	QModelIndex targetIndex = index(targetRow, 0, targetParentIndex);
 	if (targetIndex.isValid()) {
 		emit SgnItemMoved(srcParentIndex, srcIndex.parent());
+	}
+}
+
+void ProjectTreeModel::SaveNodeToJson(Node* node, QJsonArray& jsonArray) const
+{
+	QJsonObject jsonObject;
+	jsonObject["name"] = node->data.name;
+	jsonObject["path"] = node->data.path;
+
+	QJsonArray childrenArray;
+	for (Node* child : node->children) {
+		SaveNodeToJson(child, childrenArray);
+	}
+	jsonObject["children"] = childrenArray;
+
+	jsonArray.append(jsonObject);
+}
+
+void ProjectTreeModel::LoadNodeFromJson(const QJsonArray& jsonArray, Node* parentNode)
+{
+	foreach(const QJsonValue& value, jsonArray)
+	{
+		QJsonObject   obj = value.toObject();
+		VCProjectPath data(obj["name"].toString(), obj["path"].toString());
+
+		Node* newNode = new Node(data, parentNode);
+
+		if (obj.contains("children") && obj["children"].isArray()) {
+			QJsonArray childrenArray = obj["children"].toArray();
+			LoadNodeFromJson(childrenArray, newNode);
+		}
 	}
 }
 

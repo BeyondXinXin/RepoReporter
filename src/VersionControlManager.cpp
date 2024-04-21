@@ -3,11 +3,19 @@
 #include <QDebug>
 #include <QProcess>
 #include <QTimeZone>
+#include <QDir>
 
 
 QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
 {
 	QList<VCLogEntry> logEntries;
+
+	// Check if repoPath exists
+	QDir repoDir(repoPath);
+	if (!repoDir.exists()) {
+		qInfo() << u8"仓库路径不存在:" << repoPath;
+		return logEntries;
+	}
 
 	// Run git log command
 	QProcess process;
@@ -21,7 +29,7 @@ QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
 	process.start();
 
 	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qDebug() << "Error running git log command.";
+		qInfo() << u8"运行 git log 命令时出错。";
 		return logEntries;
 	}
 
@@ -73,7 +81,7 @@ QString VersionControlManager::GetChangesForVersion(const QString& repoPath, int
 	process.start();
 
 	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qDebug() << "Error running git show command.";
+		qInfo() << u8"运行 git show 命令时出错。";
 		return QString();
 	}
 

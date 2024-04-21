@@ -6,9 +6,9 @@
 
 int main(int argc, char* argv[])
 {
-	QApplication app(argc, argv);
-
 	QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+
+	QApplication app(argc, argv);
 
 	MainWindow w;
 	QDesktopWidget* desktop = QApplication::desktop();
@@ -22,5 +22,3 @@ int main(int argc, char* argv[])
 
 	return app.exec();
 }
-
-

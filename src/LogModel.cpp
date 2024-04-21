@@ -12,44 +12,12 @@ LogModel::~LogModel()
 
 void LogModel::UpdataLog(const QString& path)
 {
-	static int i = 0;
-
 	beginResetModel();
 	m_Logs.clear();
-
-	switch (i % 5) {
-	case 0:
-
-		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\RepoReporter");
-		break;
-
-	case 1:
-
-		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\qt-creator-settings");
-		break;
-
-	case 2:
-
-		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\BlogDemo");
-		break;
-
-	case 3:
-
-		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\RepoReporter");
-		break;
-
-	case 4:
-
-		m_Logs = VersionControlManager::FetchLog("D:\\GitHub\\YiHangPavilion");
-		break;
-
-	default:
-		break;
+	if (!path.isEmpty()) {
+		m_Logs = VersionControlManager::FetchLog(path);
 	}
-
-
 	endResetModel();
-	i++;
 }
 
 QString LogModel::GetIndexVersion(const QModelIndex& index) const

@@ -5,6 +5,7 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <QMimeData>
+#include <QJsonArray>
 
 #include "vcdata/VCSDataStructures.h"
 
@@ -28,18 +29,14 @@ public:
 
 	QString GetIndexPath(const QModelIndex& index)const;
 
+	void ClearData();
+
+	bool SaveToJson(const QString& filePath) const;
+	bool LoadFromJson(const QString& filePath);
+
 Q_SIGNALS:
 
 	void SgnItemMoved(const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex);
-
-private:
-
-	bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
-	Qt::DropActions supportedDropActions() const override;
-	QStringList mimeTypes() const override;
-	QMimeData* mimeData(const QModelIndexList& indexes) const override;
-
-	void MoveItem(const QModelIndex& srcIndex, const QModelIndex& targetParentIndex, const int& targetRrow);
 
 private:
 
@@ -55,7 +52,20 @@ private:
 
 private:
 
-	Node* m_RootNode;
+	bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+	Qt::DropActions supportedDropActions() const override;
+	QStringList mimeTypes() const override;
+	QMimeData* mimeData(const QModelIndexList& indexes) const override;
+
+	void MoveItem(const QModelIndex& srcIndex, const QModelIndex& targetParentIndex, const int& targetRrow);
+
+	void SaveNodeToJson(Node* node, QJsonArray& jsonArray) const;
+	void LoadNodeFromJson(const QJsonArray& jsonArray, Node* parentNode);
+
+private:
+
+	Node* m_RootNode { nullptr };
+	QString m_FilePath;
 };
 
 
