@@ -14,6 +14,7 @@ void LogModel::UpdataLog(const QString& path)
 {
 	beginResetModel();
 	m_Logs.clear();
+
 	if (!path.isEmpty()) {
 		m_Logs = VersionControlManager::FetchLog(path);
 	}
@@ -28,6 +29,16 @@ QString LogModel::GetIndexVersion(const QModelIndex& index) const
 	const VCLogEntry& entry = m_Logs[index.row()];
 
 	return entry.version;
+}
+
+QString LogModel::GetIndexMessage(const QModelIndex& index) const
+{
+	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Logs.size())) {
+		return -1;
+	}
+	const VCLogEntry& entry = m_Logs[index.row()];
+
+	return entry.message;
 }
 
 int LogModel::rowCount(const QModelIndex& parent) const
@@ -108,13 +119,15 @@ bool LogModel::setData(const QModelIndex& index, const QVariant& value, int role
 
 QModelIndex LogModel::index(int row, int column, const QModelIndex& parent) const
 {
-	if (!hasIndex(row, column, parent)) // Check if the index is valid
+	if (!hasIndex(row, column, parent)) {
 		return QModelIndex();
+	}
 
-	if (!parent.isValid())              // For top-level items
+	if (!parent.isValid()) {
 		return createIndex(row, column);
-	else
-		return QModelIndex();       // Since it's not a hierarchical model, return an invalid index for non-top-level items
+	} else {
+		return QModelIndex();
+	}
 }
 
 QModelIndex LogModel::parent(const QModelIndex& index) const

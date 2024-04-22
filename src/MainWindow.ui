@@ -120,7 +120,7 @@ QTableView::item:selected {
 </string>
              </property>
             </widget>
-            <widget class="QTextEdit" name="textEdit">
+            <widget class="QTextEdit" name="editMessage">
              <property name="readOnly">
               <bool>true</bool>
              </property>

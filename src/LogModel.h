@@ -16,6 +16,7 @@ public:
 	void UpdataLog(const QString& path);
 
 	QString GetIndexVersion(const QModelIndex& index)const;
+	QString GetIndexMessage(const QModelIndex& index)const;
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;

@@ -17,6 +17,11 @@ MainWindow::MainWindow(QWidget* parent)
 
 	connect(ui->logTableView,    &LogTableView::SgnChangeSelectLog,
 	        ui->fileTableView, &FileTableView::ChangeLog);
+
+	connect(ui->logTableView,    &LogTableView::SgnUpdateDescription,
+	        this, [&](const QString& str){
+		ui->editMessage->setText(str);
+	});
 }
 
 MainWindow::~MainWindow()

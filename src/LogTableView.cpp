@@ -24,10 +24,10 @@ LogTableView::LogTableView(QWidget* parent)
 	horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
 	horizontalHeader()->setHighlightSections(false);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
+	setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-	selectionModel()->connect(
-		selectionModel(), &QItemSelectionModel::selectionChanged,
-		this, &LogTableView::SlotSelectionChanged);
+	connect(selectionModel(), &QItemSelectionModel::selectionChanged,
+	        this, &LogTableView::SlotSelectionChanged);
 
 	setShowGrid(false);
 }
@@ -53,16 +53,30 @@ void LogTableView::SlotSelectionChanged(
 	const QItemSelection& selected, const QItemSelection& deselected)
 {
 	Q_UNUSED(deselected)
+	Q_UNUSED(selected)
 
-	QModelIndexList indexes = selected.indexes();
+	QItemSelectionModel* model = selectionModel();
+	QItemSelection  range = model->selection();
+	QModelIndexList indexes = range.indexes();
 
-	if (!indexes.isEmpty()) {
-		QList<QString> vers;
-
-		foreach(auto index, indexes)
-		{
-			vers << m_Model->GetIndexVersion(index);
-		}
-		emit SgnChangeSelectLog(vers);
+	if (indexes.isEmpty()) {
+		return;
 	}
+
+	QSet<int> selectedRows;
+	QList<QString> vers;
+	QStringList    descriptions;
+
+	foreach(auto index, indexes)
+	{
+		if (selectedRows.contains(index.row())) {
+			continue;
+		}
+		selectedRows << index.row();
+		vers << m_Model->GetIndexVersion(index);
+		descriptions << m_Model->GetIndexMessage(index);
+	}
+
+	emit SgnChangeSelectLog(vers);
+	emit SgnUpdateDescription(descriptions.join("\n------------\n"));
 }

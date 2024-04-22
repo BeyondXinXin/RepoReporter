@@ -18,6 +18,7 @@ public:
 Q_SIGNALS:
 
 	void SgnChangeSelectLog(const QList<QString>& versions);
+	void SgnUpdateDescription(const QString& str);
 
 protected:
 
