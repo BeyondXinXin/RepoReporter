@@ -39,6 +39,28 @@ inline uint qHash(FileOperation key, uint seed = 0) noexcept
 {
 	return ::qHash(static_cast<int>(key), seed);
 }
+// --------------------- VCFileEntry ---------------------
+
+struct VCFileEntry {
+	QString filePath;
+	QString extensionName;
+	int addNum;
+	int deleteNum;
+	FileOperation operation;
+	
+	friend QDebug operator<<(QDebug dbg, const VCFileEntry& entry);
+};
+
+inline QDebug operator<<(QDebug dbg, const VCFileEntry& entry)
+{
+	dbg << "VCFileEntry("
+		<< "filePath:" << entry.filePath << ", "
+		<< "extensionName:" << entry.extensionName << ", "
+		<< "addNum:" << entry.addNum << ", "
+		<< "deleteNum:" << entry.deleteNum << ", "
+		<< "operation:" << FileOperationToString(entry.operation)<< ")";
+	return dbg;
+}
 
 // --------------------- VCLogEntry ---------------------
 

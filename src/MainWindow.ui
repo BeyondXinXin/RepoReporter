@@ -13,6 +13,22 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QTableView {
+    selection-color: #000000;
+}
+
+QTableView::item {
+    border-right: 1px solid #d6d9dc;
+}
+
+QTableView::item:selected {
+    background-color: rgba(0, 102, 204, 100);
+    color: #000000;
+}
+
+</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <property name="spacing">
@@ -104,20 +120,7 @@
             </property>
             <widget class="LogTableView" name="logTableView">
              <property name="styleSheet">
-              <string notr="true">QTableView {
-    selection-color: #000000;
-}
-
-QTableView::item {
-    border-right: 1px solid #d6d9dc;
-}
-
-QTableView::item:selected {
-    background-color: rgba(0, 102, 204, 100);
-    color: #000000;
-}
-
-</string>
+              <string notr="true"/>
              </property>
             </widget>
             <widget class="QTextEdit" name="editMessage">

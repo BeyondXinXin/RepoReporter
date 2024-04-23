@@ -26,6 +26,8 @@ protected:
 
 private slots:
 
+	void InitUI();
+
 	void AddProject();
 	void SlotSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
@@ -33,6 +35,8 @@ private:
 
 	QAction* m_AddAction;
 	LogModel* m_Model;
+
+	QString m_CurPaht;
 };
 
 #endif // LOGTABLEWIDGET_H

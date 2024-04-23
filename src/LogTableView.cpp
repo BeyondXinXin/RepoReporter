@@ -6,34 +6,26 @@
 #include <QContextMenuEvent>
 
 #include "LogModel.h"
+#include "VersionControlManager.h"
 
 LogTableView::LogTableView(QWidget* parent)
 	: QTableView(parent)
 {
-	m_AddAction = new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
-	connect(m_AddAction, &QAction::triggered, this, &LogTableView::AddProject);
-
 	m_Model = new LogModel(this);
 	setModel(m_Model);
 
-	setDragEnabled(false);
-	setAcceptDrops(false);
-	setDragDropMode(QAbstractItemView::NoDragDrop);
-
-	verticalHeader()->setDefaultSectionSize(10);
-	horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
-	horizontalHeader()->setHighlightSections(false);
-	setSelectionBehavior(QAbstractItemView::SelectRows);
-	setSelectionMode(QAbstractItemView::ExtendedSelection);
+	m_AddAction = new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
+	connect(m_AddAction,      &QAction::triggered, this, &LogTableView::AddProject);
 
 	connect(selectionModel(), &QItemSelectionModel::selectionChanged,
 	        this, &LogTableView::SlotSelectionChanged);
 
-	setShowGrid(false);
+	InitUI();
 }
 
 void LogTableView::ChangeProPath(const QString& path)
 {
+	m_CurPaht = path;
 	m_Model->UpdataLog(path);
 }
 
@@ -43,6 +35,22 @@ void LogTableView::contextMenuEvent(QContextMenuEvent* event)
 
 	menu.addAction(m_AddAction);
 	menu.exec(event->globalPos());
+}
+
+void LogTableView::InitUI()
+{
+	setDragEnabled(false);
+	setAcceptDrops(false);
+	setDragDropMode(QAbstractItemView::NoDragDrop);
+
+	verticalHeader()->setDefaultSectionSize(10);
+
+	horizontalHeader()->setHighlightSections(false);
+
+	setSelectionBehavior(QAbstractItemView::SelectRows);
+	setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+	setShowGrid(false);
 }
 
 void LogTableView::AddProject()
@@ -78,5 +86,5 @@ void LogTableView::SlotSelectionChanged(
 	}
 
 	emit SgnChangeSelectLog(vers);
-	emit SgnUpdateDescription(descriptions.join("\n------------\n"));
+	emit SgnUpdateDescription(descriptions.join("\n- - - - - - - - - - -\n"));
 }

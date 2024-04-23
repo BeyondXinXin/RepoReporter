@@ -67,27 +67,56 @@ QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
 	return logEntries;
 }
 
-QString VersionControlManager::GetChangesForVersion(const QString& repoPath, int version)
+QList<VCFileEntry> VersionControlManager::GetChangesForVersion(const QString& repoPath, const QList<QString>& versions)
 {
-	// Run git show command for the given version
-	QProcess process;
+	QList<VCFileEntry> fileEntries;
 
+	QProcess process;
 	process.setProgram("git");
 	QStringList args;
-
-	args << "show" << QString::number(version);
+	args << "show" << "--pretty=format:%n" << "--numstat";
+	foreach(auto version, versions)
+	{
+		args << version;
+	}
 	process.setArguments(args);
 	process.setWorkingDirectory(repoPath);
 	process.start();
 
 	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"运行 git show 命令时出错。";
-		return QString();
+		qInfo() << u8"运行 git diff 命令时出错。";
+		return fileEntries;
 	}
 
-	// Return the output as QString
-	QByteArray output = process.readAllStandardOutput();
-	QString    outputStr(output);
+	QByteArray  output = process.readAllStandardOutput();
+	QString     outputStr(output);
+	QStringList lines = outputStr.split("\n");
+	QMap<QString, VCFileEntry> fileMap;
 
-	return outputStr;
+	foreach(const QString& line, lines)
+	{
+		if (line.isEmpty()) {
+			continue;
+		}
+		QStringList parts = line.split(QRegExp("\\s+"));
+		if (parts.size() < 3) {
+			continue;
+		}
+		QString filePath = parts[2];
+		VCFileEntry& entry = fileMap[filePath];
+		entry.addNum += parts[0].toInt();
+		entry.deleteNum += parts[1].toInt();
+		entry.filePath = filePath;
+		if ((entry.addNum > 0) && (entry.deleteNum > 0)) {
+			entry.operation = FileOperation::Modify;
+		} else if (entry.addNum > 0) {
+			entry.operation = FileOperation::Add;
+		} else if (entry.deleteNum > 0) {
+			entry.operation = FileOperation::Delete;
+		}
+		QFileInfo fileInfo(filePath);
+		entry.extensionName = fileInfo.suffix();
+	}
+
+	return fileMap.values();
 }

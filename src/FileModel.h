@@ -4,6 +4,8 @@
 #include <QAbstractItemModel>
 #include <QMap>
 
+#include "vcdata/VCSDataStructures.h"
+
 class FileModel : public QAbstractItemModel {
 	Q_OBJECT
 
@@ -12,7 +14,7 @@ public:
 	explicit FileModel(QObject* parent = nullptr);
 	~FileModel() override;
 
-	void UpdataFile(const QList<QString>& versions);
+	void UpdataFile(const QString& path, const QList<QString>& versions);
 
 	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 	QModelIndex parent(const QModelIndex& child) const override;
@@ -23,7 +25,7 @@ public:
 
 private:
 
-	QList<QPair<QString, QString> > m_files;
+	QList<VCFileEntry> m_Files;
 };
 
 #endif // LOGMODEL_H

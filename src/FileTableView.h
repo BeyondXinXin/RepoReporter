@@ -15,18 +15,21 @@ public:
 
 	void ChangeLog(const QList<QString>& versions);
 
+	void ChangeProPath(const QString& path);
+
 protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;
 
-private slots:
+private:
 
-	void AddProject();
+	void InitUI();
 
 private:
 
 	QAction* m_AddAction;
 	FileModel* m_Model;
+	QString m_CurPaht;
 };
 
 #endif // LOGTABLEWIDGET_H

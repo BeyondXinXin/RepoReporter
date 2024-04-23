@@ -14,7 +14,10 @@ MainWindow::MainWindow(QWidget* parent)
 
 	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
 	        ui->logTableView, &LogTableView::ChangeProPath);
-
+	
+	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
+			ui->fileTableView, &FileTableView::ChangeProPath);
+	
 	connect(ui->logTableView,    &LogTableView::SgnChangeSelectLog,
 	        ui->fileTableView, &FileTableView::ChangeLog);
 

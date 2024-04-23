@@ -10,26 +10,35 @@ FileTableView::FileTableView(QWidget* parent)
 	m_Model = new FileModel(this);
 	setModel(m_Model);
 
-	setDragEnabled(false);
-	setAcceptDrops(false);
-	setDragDropMode(QAbstractItemView::NoDragDrop);
-
-	verticalHeader()->setDefaultSectionSize(10);
-	horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-	setSelectionBehavior(QAbstractItemView::SelectRows);
-
-	show();
+	InitUI();
 }
 
 void FileTableView::ChangeLog(const QList<QString>& versions)
 {
-	m_Model->UpdataFile(versions);
+	m_Model->UpdataFile(m_CurPaht, versions);
+}
+
+void FileTableView::ChangeProPath(const QString& path)
+{
+	m_CurPaht = path;
 }
 
 void FileTableView::contextMenuEvent(QContextMenuEvent* event)
 {
 }
 
-void FileTableView::AddProject()
+void FileTableView::InitUI()
 {
+	setDragEnabled(false);
+	setAcceptDrops(false);
+
+	setDragDropMode(QAbstractItemView::NoDragDrop);
+
+	verticalHeader()->setDefaultSectionSize(10);
+	horizontalHeader()->setHighlightSections(false);
+
+	setSelectionBehavior(QAbstractItemView::SelectRows);
+	setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+	setShowGrid(false);
 }
