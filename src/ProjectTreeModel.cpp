@@ -260,6 +260,10 @@ bool ProjectTreeModel::dropMimeData(
 	const QMimeData* data, Qt::DropAction action,
 	int targetRow, int targetColumn, const QModelIndex& parent)
 {
+	if (parent.parent().isValid()) {
+		return false;
+	}
+
 	if ((action == Qt::IgnoreAction) || !data->hasFormat("text/plain")) {
 		return false;
 	}
