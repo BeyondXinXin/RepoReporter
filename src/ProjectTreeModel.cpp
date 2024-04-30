@@ -8,12 +8,27 @@
 #include <QJsonObject>
 #include <QFile>
 #include <QJsonDocument>
+#include <QStandardPaths>
+#include <QDir>
 
 ProjectTreeModel::ProjectTreeModel(QObject* parent)
 	: QAbstractItemModel(parent),
 	m_RootNode(new Node(VCProjectPath("Root")))
 {
-	m_FilePath = QStringLiteral("project_data.json");
+	QString configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+
+	m_FilePath = configDir + "/project_data.json";
+
+	QDir dir(configDir);
+
+	if (!dir.exists()) {
+		if (!dir.mkpath(configDir)) {
+			qInfo() << u8"无法创建配置目录。";
+			m_FilePath = "project_data.json";
+		}
+	}
+
+
 	LoadFromJson(m_FilePath);
 }
 
