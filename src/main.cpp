@@ -2,9 +2,11 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QScreen>
+#include <QThread>
 
 #include "MainWindow.h"
 #include "ConfigManager.h"
+#include "LogManager.h"
 
 int main(int argc, char* argv[])
 {
@@ -14,7 +16,13 @@ int main(int argc, char* argv[])
 
 	QApplication app(argc, argv);
 
-	QSize  lastSize = ConfigManager::GetInstance().ReadValue("LastWindowSize").toSize();
+	QThread::currentThread()->setObjectName("Main");
+
+	LogManager logMar;
+
+	Q_UNUSED(logMar)
+
+	QSize lastSize = ConfigManager::GetInstance().ReadValue("LastWindowSize").toSize();
 	QPoint lastPosition = ConfigManager::GetInstance().ReadValue("LastWindowPosition").toPoint();
 
 	MainWindow w;
@@ -40,7 +48,11 @@ int main(int argc, char* argv[])
 	}
 	w.show();
 
+	qInfo() << u8"软件启动。";
+
 	int res = app.exec();
+
+	qInfo() << u8"软件关闭。";
 
 	ConfigManager::GetInstance().WriteValue("LastWindowSize", w.size());
 	ConfigManager::GetInstance().WriteValue("LastWindowPosition", w.pos());

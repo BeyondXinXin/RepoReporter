@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(BUILD_SHARED_LIBS "" ON)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
+find_package(Qt5LinguistTools)
 
 add_subdirectory(src)
 
