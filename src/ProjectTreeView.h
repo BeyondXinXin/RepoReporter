@@ -2,6 +2,7 @@
 #define ProjectTreeView_H
 
 #include <QTreeView>
+#include <QModelIndex>
 
 
 class ProjectTreeModel;
@@ -39,6 +40,8 @@ private:
 	QAction* m_DeleteAction;
 
 	ProjectTreeModel* m_Model;
+
+	QModelIndex m_LastSelectItem;
 };
 
 #endif // PROJECTTREE_H

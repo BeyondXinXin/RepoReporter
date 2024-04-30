@@ -80,6 +80,23 @@ void ProjectTreeView::showEvent(QShowEvent* event)
 			expand(index);
 		}
 	}
+
+	QList<int> selectItemList = ConfigManager::GetInstance().ReadList<int>(
+		"ProjectTreeViewSelectItem", QList<int>{ -1, -1, -1, -1 });
+	QModelIndex index = model()->index(selectItemList.at(0), selectItemList.at(1));
+	QModelIndex selectItem;
+
+	if (index.isValid()) {
+		selectItem = model()->index(selectItemList.at(2), selectItemList.at(3), index);
+	} else {
+		selectItem = model()->index(selectItemList.at(2), selectItemList.at(3));
+	}
+
+	if (selectItem.isValid()) {
+		m_LastSelectItem = selectItem;
+		setCurrentIndex(m_LastSelectItem);
+	}
+
 	QTreeView::showEvent(event);
 }
 
@@ -98,6 +115,17 @@ void ProjectTreeView::hideEvent(QHideEvent* event)
 	ConfigManager::GetInstance().WriteList<bool>(
 		"ProjectTreeViewExpandedStates", expandedStates);
 
+
+	QList<int> selectItemList;
+
+	if (m_LastSelectItem.isValid()) {
+		selectItemList << m_LastSelectItem.parent().row()
+		               << m_LastSelectItem.parent().column()
+		               << m_LastSelectItem.row()
+		               << m_LastSelectItem.column();
+	}
+	ConfigManager::GetInstance().WriteList<int>(
+		"ProjectTreeViewSelectItem", selectItemList);
 
 	QTreeView::hideEvent(event);
 }
@@ -148,7 +176,10 @@ void ProjectTreeView::SlotSelectionChanged(
 	QModelIndexList indexes = selected.indexes();
 
 	if (!indexes.isEmpty()) {
+		m_LastSelectItem = indexes.first();
 		emit SgnSelectPathChange(m_Model->GetIndexPath(indexes.first()));
+	} else {
+		m_LastSelectItem = QModelIndex();
 	}
 }
 
