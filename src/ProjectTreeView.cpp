@@ -13,6 +13,7 @@
 
 #include "ProjectTreeModel.h"
 #include "AddProjectDialog.h"
+#include "ConfigManager.h"
 
 ProjectTreeView::ProjectTreeView(QWidget* parent)
 	: QTreeView(parent)
@@ -66,6 +67,41 @@ void ProjectTreeView::mouseReleaseEvent(QMouseEvent* event)
 		clearSelection();
 }
 
+void ProjectTreeView::showEvent(QShowEvent* event)
+{
+	QList<bool> expandedStates =
+		ConfigManager::GetInstance()
+		.ReadList<bool>("ProjectTreeViewExpandedStates", QList<bool>{});
+
+	for (int row = 0; row < expandedStates.size(); ++row) {
+		QModelIndex index = model()->index(row, 0);
+
+		if (expandedStates.at(row)) {
+			expand(index);
+		}
+	}
+	QTreeView::showEvent(event);
+}
+
+void ProjectTreeView::hideEvent(QHideEvent* event)
+{
+	QList<bool> expandedStates;
+	int rowCount = model()->rowCount();
+
+	for (int row = 0; row < rowCount; ++row) {
+		QModelIndex index = model()->index(row, 0);
+		bool expanded = isExpanded(index);
+
+		expandedStates.append(expanded);
+	}
+
+	ConfigManager::GetInstance().WriteList<bool>(
+		"ProjectTreeViewExpandedStates", expandedStates);
+
+
+	QTreeView::hideEvent(event);
+}
+
 void ProjectTreeView::AddProject()
 {
 	QModelIndex currentIndex;
@@ -74,6 +110,7 @@ void ProjectTreeView::AddProject()
 		currentIndex = QModelIndex();
 	else {
 		QModelIndexList indexes = selectedIndexes();
+
 		currentIndex = indexes.first();
 	}
 
@@ -115,7 +152,8 @@ void ProjectTreeView::SlotSelectionChanged(
 	}
 }
 
-void ProjectTreeView::SlotItemMoved(const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex)
+void ProjectTreeView::SlotItemMoved(
+	const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex)
 {
 	expand(oldParentIndex);
 	expand(newParentIndex);

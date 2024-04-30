@@ -21,6 +21,8 @@ protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;
+	void showEvent(QShowEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
 
 private slots:
 
@@ -31,8 +33,11 @@ private slots:
 
 private:
 
+private:
+
 	QAction* m_AddAction;
 	QAction* m_DeleteAction;
+
 	ProjectTreeModel* m_Model;
 };
 

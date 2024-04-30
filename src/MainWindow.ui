@@ -80,7 +80,7 @@ QTableView::item:selected {
        <number>12</number>
       </property>
       <item>
-       <widget class="QSplitter" name="splitter">
+       <widget class="QSplitter" name="verticalSplitter">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -111,7 +111,7 @@ QTableView::item:selected {
            </widget>
           </item>
           <item>
-           <widget class="QSplitter" name="splitter_3">
+           <widget class="QSplitter" name="levelSplitter">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>

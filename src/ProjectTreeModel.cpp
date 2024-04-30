@@ -45,6 +45,7 @@ bool ProjectTreeModel::InsertData(const QModelIndex& index, VCProjectPath newDat
 
 	beginInsertRows(parentIndex, row, row);
 	Node* child = new Node(newData, parentNode);
+
 	Q_UNUSED(child)
 	endInsertRows();
 
@@ -94,6 +95,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& index, int role) const
 	if (index.column() == 0) {
 		if ((role == Qt::EditRole) || (role == Qt::DisplayRole)) {
 			Node* node = static_cast<Node *>(index.internalPointer());
+
 			return node->data.name;
 		} else if (role == Qt::DecorationRole) {
 			Node* node = static_cast<Node *>(index.internalPointer());
@@ -210,15 +212,18 @@ void ProjectTreeModel::ClearData()
 bool ProjectTreeModel::SaveToJson(const QString& filePath) const
 {
 	QFile file(filePath);
+
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
 		qInfo() << u8"无法打开文件进行写入:" << file.errorString();
 		return false;
 	}
 
 	QJsonArray jsonArray;
+
 	SaveNodeToJson(m_RootNode, jsonArray);
 
 	QJsonDocument jsonDoc(jsonArray);
+
 	file.write(jsonDoc.toJson());
 	file.close();
 
@@ -228,6 +233,7 @@ bool ProjectTreeModel::SaveToJson(const QString& filePath) const
 bool ProjectTreeModel::LoadFromJson(const QString& filePath)
 {
 	QFile file(filePath);
+
 	if (!file.open(QIODevice::ReadOnly)) {
 		qInfo() << u8"无法打开文件进行读取:" << file.errorString();
 		return false;
@@ -244,6 +250,7 @@ bool ProjectTreeModel::LoadFromJson(const QString& filePath)
 	ClearData();
 	beginResetModel();
 	QJsonArray childrenArray = obj["children"].toArray();
+
 	LoadNodeFromJson(childrenArray, m_RootNode);
 	endResetModel();
 	return true;
@@ -260,6 +267,7 @@ bool ProjectTreeModel::dropMimeData(
 	if (-1 == targetColumn) {
 		targetColumn = 0;
 	}
+
 	if (-1 == targetRow) {
 		targetRow = 0;
 	}
@@ -268,8 +276,10 @@ bool ProjectTreeModel::dropMimeData(
 	QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
 	QList<QPair<int, int> > srcRowTree;
+
 	while (!stream.atEnd()) {
 		int srcRow, srcColumn;
+
 		stream >> srcRow >> srcColumn;
 		srcRowTree.append(QPair<int, int>(srcRow, srcColumn));
 	}
@@ -277,6 +287,7 @@ bool ProjectTreeModel::dropMimeData(
 	std::reverse(srcRowTree.begin(), srcRowTree.end());
 
 	QModelIndex sourceIndex = index(srcRowTree.at(0).first, srcRowTree.at(0).second, QModelIndex());
+
 	for (int i = 1; i < srcRowTree.size(); i++) {
 		sourceIndex = index(srcRowTree.at(i).first, srcRowTree.at(i).second, sourceIndex);
 	}
@@ -302,11 +313,14 @@ QStringList ProjectTreeModel::mimeTypes() const
 QMimeData * ProjectTreeModel::mimeData(const QModelIndexList& indexes) const
 {
 	QMimeData* mimeData = new QMimeData();
+
 	if (1 == indexes.size()) {
 		QModelIndex index = indexes.first();
+
 		if (index.isValid()) {
 			QByteArray  encodedData;
 			QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
 			stream << index.row();
 			stream << index.column();
 
@@ -333,6 +347,7 @@ void ProjectTreeModel::ProjectTreeModel::MoveItem(
 	Node* srcNode = static_cast<Node *>(srcIndex.internalPointer());
 	Node* srcParentNode = srcNode->parent;
 	Node* targetParentNode;
+
 	if (targetParentIndex.isValid()) {
 		targetParentNode = static_cast<Node *>(targetParentIndex.internalPointer());
 	} else {
@@ -344,6 +359,7 @@ void ProjectTreeModel::ProjectTreeModel::MoveItem(
 	}
 
 	int srcRow = srcParentNode->children.indexOf(srcNode);
+
 	if (srcRow == -1) {
 		return;
 	}
@@ -355,6 +371,7 @@ void ProjectTreeModel::ProjectTreeModel::MoveItem(
 	endResetModel();
 
 	QModelIndex targetIndex = index(targetRow, 0, targetParentIndex);
+
 	if (targetIndex.isValid()) {
 		emit SgnItemMoved(srcParentIndex, srcIndex.parent());
 	}
@@ -363,10 +380,12 @@ void ProjectTreeModel::ProjectTreeModel::MoveItem(
 void ProjectTreeModel::SaveNodeToJson(Node* node, QJsonArray& jsonArray) const
 {
 	QJsonObject jsonObject;
+
 	jsonObject["name"] = node->data.name;
 	jsonObject["path"] = node->data.path;
 
 	QJsonArray childrenArray;
+
 	for (Node* child : node->children) {
 		SaveNodeToJson(child, childrenArray);
 	}
@@ -386,6 +405,7 @@ void ProjectTreeModel::LoadNodeFromJson(const QJsonArray& jsonArray, Node* paren
 
 		if (obj.contains("children") && obj["children"].isArray()) {
 			QJsonArray childrenArray = obj["children"].toArray();
+
 			LoadNodeFromJson(childrenArray, newNode);
 		}
 	}

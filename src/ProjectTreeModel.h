@@ -43,7 +43,7 @@ private:
 	struct Node
 	{
 		VCProjectPath data;
-		QList<Node *> children;
+		QList<Node *>children;
 		Node* parent;
 
 		Node(const VCProjectPath& inData, Node * parent = nullptr);
