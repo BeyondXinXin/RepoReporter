@@ -85,6 +85,12 @@ void LogTableView::SlotSelectionChanged(
 		descriptions << m_Model->GetIndexMessage(index);
 	}
 
+	if (descriptions.size() > 1) {
+		for (int i = 0; i < descriptions.size(); i++) {
+			descriptions[i] = vers[i] + u8"\n" + descriptions[i];
+		}
+	}
+
 	emit SgnChangeSelectLog(vers);
 	emit SgnUpdateDescription(descriptions.join("\n- - - - - - - - - - -\n"));
 }
