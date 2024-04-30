@@ -43,15 +43,16 @@ QString LogModel::GetIndexMessage(const QModelIndex& index) const
 
 int LogModel::rowCount(const QModelIndex& parent) const
 {
-	if (parent.isValid())
-		return 0;  // 仅支持顶层节点
+	if (parent.isValid()) {
+		return 0;
+	}
 
 	return m_Logs.size();
 }
 
 int LogModel::columnCount(const QModelIndex& parent) const
 {
-	return 5; // 固定为5列
+	return 5;
 }
 
 QVariant LogModel::data(const QModelIndex& index, int role) const

@@ -7,6 +7,7 @@
 
 #include "LogModel.h"
 #include "VersionControlManager.h"
+#include "ConfigManager.h"
 
 LogTableView::LogTableView(QWidget* parent)
 	: QTableView(parent)
@@ -35,6 +36,34 @@ void LogTableView::contextMenuEvent(QContextMenuEvent* event)
 
 	menu.addAction(m_AddAction);
 	menu.exec(event->globalPos());
+}
+
+void LogTableView::showEvent(QShowEvent* event)
+{
+	QTableView::showEvent(event);
+	QHeaderView* header = horizontalHeader();
+	int column = m_Model->columnCount();
+	QList<int> sizeList = ConfigManager::GetInstance().ReadList<int>("LogTableViewSectionSize", QList<int>{});
+
+	if (sizeList.size() == column) {
+		for (int i = 0; i < column; i++) {
+			header->resizeSection(i, sizeList.at(i));
+		}
+	}
+}
+
+void LogTableView::hideEvent(QHideEvent* event)
+{
+	QTableView::hideEvent(event);
+	QHeaderView* header = horizontalHeader();
+	QList<int>   sizeList;
+	int column = m_Model->columnCount();
+
+	for (int i = 0; i < column; i++) {
+		sizeList << header->sectionSize(i);
+	}
+
+	ConfigManager::GetInstance().WriteList<int>("LogTableViewSectionSize", sizeList);
 }
 
 void LogTableView::InitUI()

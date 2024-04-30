@@ -20,6 +20,8 @@ public:
 protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;
+	void showEvent(QShowEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
 
 private:
 

@@ -23,6 +23,8 @@ Q_SIGNALS:
 protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;
+	void showEvent(QShowEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
 
 private slots:
 
@@ -34,6 +36,7 @@ private slots:
 private:
 
 	QAction* m_AddAction;
+
 	LogModel* m_Model;
 
 	QString m_CurPaht;

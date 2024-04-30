@@ -3,6 +3,7 @@
 #include <QHeaderView>
 
 #include "FileModel.h"
+#include "ConfigManager.h"
 
 FileTableView::FileTableView(QWidget* parent)
 	: QTableView(parent)
@@ -25,6 +26,34 @@ void FileTableView::ChangeProPath(const QString& path)
 
 void FileTableView::contextMenuEvent(QContextMenuEvent* event)
 {
+}
+
+void FileTableView::showEvent(QShowEvent* event)
+{
+	QTableView::showEvent(event);
+	QHeaderView* header = horizontalHeader();
+	int column = m_Model->columnCount();
+	QList<int> sizeList = ConfigManager::GetInstance().ReadList<int>("FileTableViewSectionSize", QList<int>{});
+
+	if (sizeList.size() == column) {
+		for (int i = 0; i < column; i++) {
+			header->resizeSection(i, sizeList.at(i));
+		}
+	}
+}
+
+void FileTableView::hideEvent(QHideEvent* event)
+{
+	QTableView::hideEvent(event);
+	QHeaderView* header = horizontalHeader();
+	QList<int>   sizeList;
+	int column = m_Model->columnCount();
+
+	for (int i = 0; i < column; i++) {
+		sizeList << header->sectionSize(i);
+	}
+
+	ConfigManager::GetInstance().WriteList<int>("FileTableViewSectionSize", sizeList);
 }
 
 void FileTableView::InitUI()
