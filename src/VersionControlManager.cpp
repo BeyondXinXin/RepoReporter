@@ -7,10 +7,10 @@
 #include <QRegularExpression>
 
 
-QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath)
+QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath, QString& curVersion)
 {
 	QList<VCLogEntry> logEntries;
-
+	
 	// Check if repoPath exists
 	QDir repoDir(repoPath);
 
@@ -25,13 +25,15 @@ QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath)
 	process.setProgram("git");
 	QStringList args;
 
-	args << "log" << "--name-status" << "--pretty=format:%h|%s|%an|%ad" << "--date=format-local:%c";
+	args << "log" << "--all" << "--name-status" << "--pretty=format:%h|%s|%an|%ad" << "--date=format-local:%c";
 	process.setArguments(args);
 	process.setWorkingDirectory(repoPath);
 	process.start();
 
 	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"运行 git log 命令时出错。";
+		qInfo() << u8"运行"
+		           " 'git log --name-status --pretty=format:%h|%s|%an|%ad --date=format-local:%c' "
+		           "命令时出错。";
 		return logEntries;
 	}
 
@@ -39,8 +41,8 @@ QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath)
 	QByteArray  output = process.readAllStandardOutput();
 	QString     outputStr(output);
 	QStringList lines = outputStr.split("\n");
+	QString     dataFormat = "ddd MMM d HH:mm:ss yyyy";
 
-	QString dataFormat = "ddd MMM d HH:mm:ss yyyy";
 
 	foreach(const QString& line, lines)
 	{
@@ -53,9 +55,6 @@ QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath)
 			entry.message = parts[1];
 			entry.author = parts[2];
 			entry.date = QLocale::c().toDateTime(parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
-
-			qInfo() << parts[3];
-			qInfo() << entry.date;
 
 			logEntries.append(entry);
 		} else if (parts.size() > 0) {
@@ -70,6 +69,26 @@ QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath)
 				logEntries.last().operations << operation;
 			}
 		}
+	}
+
+
+	args.clear();
+	args << "log" << "-1" << "--pretty=format:%H";
+	process.setArguments(args);
+	process.setWorkingDirectory(repoPath);
+	process.start();
+
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << u8"运行"
+		           " 'git log -1 --pretty=format:%H' "
+		           "命令时出错。";
+		curVersion = "";
+		return logEntries;
+	} else {
+		QByteArray  output = process.readAllStandardOutput();
+		QString     outputStr(output);
+		QStringList lines = outputStr.split("\n");
+		curVersion = lines.first();
 	}
 
 	return logEntries;

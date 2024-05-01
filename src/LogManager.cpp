@@ -52,7 +52,9 @@ void LogManager::LogMessageOutput(QtMsgType type,
 	switch (type) {
 	case QtDebugMsg: {
 		text = QString("DEBUG:");
-		break;
+		cout << msg << Qt::endl;
+
+		return;
 	}
 
 	case QtInfoMsg: {

@@ -5,13 +5,13 @@
 
 #include "vcdata/VCSDataStructures.h"
 
-class LogModel : public QAbstractItemModel {
+class LogTableModel : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
 
-	explicit LogModel(QObject* parent = nullptr);
-	~LogModel() override;
+	explicit LogTableModel(QObject* parent = nullptr);
+	~LogTableModel() override;
 
 	void UpdataLog(const QString& path);
 
@@ -27,9 +27,18 @@ public:
 	QModelIndex parent(const QModelIndex& index) const override;
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
 
+Q_SIGNALS:
+
+	void SgnCurVerChange(const int& curVer);
+
 private:
 
-	QList<VCLogEntry> m_Logs;
+	void UpdateCurrentVersion();
+
+private:
+
+	QList<VCLogEntry>m_Logs;
+	QString m_CurVersion;
 };
 
 #endif // LOGMODEL_H

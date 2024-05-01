@@ -1,27 +1,30 @@
-﻿#include "LogModel.h"
+﻿#include "LogTableModel.h"
 
 #include "VersionControlManager.h"
 
 
-LogModel::LogModel(QObject* parent)
+LogTableModel::LogTableModel(QObject* parent)
 	: QAbstractItemModel(parent)
 {}
 
-LogModel::~LogModel()
+LogTableModel::~LogTableModel()
 {}
 
-void LogModel::UpdataLog(const QString& path)
+void LogTableModel::UpdataLog(const QString& path)
 {
 	beginResetModel();
 	m_Logs.clear();
+	m_CurVersion = "";
 
 	if (!path.isEmpty()) {
-		m_Logs = VersionControlManager::FetchLog(path);
+		m_Logs = VersionControlManager::FetchLog(path, m_CurVersion);
 	}
 	endResetModel();
+
+	UpdateCurrentVersion();
 }
 
-QString LogModel::GetIndexVersion(const QModelIndex& index) const
+QString LogTableModel::GetIndexVersion(const QModelIndex& index) const
 {
 	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Logs.size())) {
 		return -1;
@@ -31,7 +34,7 @@ QString LogModel::GetIndexVersion(const QModelIndex& index) const
 	return entry.version;
 }
 
-QString LogModel::GetIndexMessage(const QModelIndex& index) const
+QString LogTableModel::GetIndexMessage(const QModelIndex& index) const
 {
 	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Logs.size())) {
 		return -1;
@@ -41,7 +44,7 @@ QString LogModel::GetIndexMessage(const QModelIndex& index) const
 	return entry.message;
 }
 
-int LogModel::rowCount(const QModelIndex& parent) const
+int LogTableModel::rowCount(const QModelIndex& parent) const
 {
 	if (parent.isValid()) {
 		return 0;
@@ -50,12 +53,12 @@ int LogModel::rowCount(const QModelIndex& parent) const
 	return m_Logs.size();
 }
 
-int LogModel::columnCount(const QModelIndex& parent) const
+int LogTableModel::columnCount(const QModelIndex& parent) const
 {
 	return 5;
 }
 
-QVariant LogModel::data(const QModelIndex& index, int role) const
+QVariant LogTableModel::data(const QModelIndex& index, int role) const
 {
 	if (!index.isValid())
 		return QVariant();
@@ -87,7 +90,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
-QVariant LogModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant LogTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal)) {
 		switch (section) {
@@ -107,7 +110,7 @@ QVariant LogModel::headerData(int section, Qt::Orientation orientation, int role
 	return QVariant();
 }
 
-bool LogModel::setData(const QModelIndex& index, const QVariant& value, int role)
+bool LogTableModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	if (data(index, role) != value) {
 		// 如果需要，在此处进行数据修改
@@ -118,7 +121,7 @@ bool LogModel::setData(const QModelIndex& index, const QVariant& value, int role
 	return false;
 }
 
-QModelIndex LogModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex LogTableModel::index(int row, int column, const QModelIndex& parent) const
 {
 	if (!hasIndex(row, column, parent)) {
 		return QModelIndex();
@@ -131,15 +134,27 @@ QModelIndex LogModel::index(int row, int column, const QModelIndex& parent) cons
 	}
 }
 
-QModelIndex LogModel::parent(const QModelIndex& index) const
+QModelIndex LogTableModel::parent(const QModelIndex& index) const
 {
-	return QModelIndex(); // Since it's a flat model, return an invalid index
+	return QModelIndex();
 }
 
-Qt::ItemFlags LogModel::flags(const QModelIndex& index) const
+Qt::ItemFlags LogTableModel::flags(const QModelIndex& index) const
 {
 	if (!index.isValid())
 		return Qt::NoItemFlags;
 
-	return Qt::ItemIsEnabled | Qt::ItemIsSelectable; // You can add Qt::ItemIsEditable if you want the items to be editable
+	return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+}
+
+void LogTableModel::UpdateCurrentVersion()
+{
+	int id = -1;
+	for (int i = 0; i < m_Logs.size(); i++) {
+		if (m_CurVersion.startsWith(m_Logs.at(i).version)) {
+			id = i;
+			break;
+		}
+	}
+	emit SgnCurVerChange(id);
 }

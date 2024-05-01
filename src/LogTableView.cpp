@@ -5,15 +5,19 @@
 #include <QTableWidget>
 #include <QContextMenuEvent>
 
-#include "LogModel.h"
+#include "LogTableModel.h"
 #include "VersionControlManager.h"
 #include "ConfigManager.h"
+#include "LogTableDelegate.h"
 
 LogTableView::LogTableView(QWidget* parent)
 	: QTableView(parent)
 {
-	m_Model = new LogModel(this);
+	m_Model = new LogTableModel(this);
 	setModel(m_Model);
+
+	m_Delegate = new LogTableDelegate(this);
+	setItemDelegate(m_Delegate);
 
 	InitUI();
 	InitConnect();
@@ -81,6 +85,9 @@ void LogTableView::InitConnect()
 {
 	connect(selectionModel(), &QItemSelectionModel::selectionChanged,
 	        this, &LogTableView::SlotSelectionChanged);
+
+	connect(m_Model,          &LogTableModel::SgnCurVerChange,
+	        m_Delegate, &LogTableDelegate::SetCurrentVersionRow);
 
 
 	m_CopyFullContentAction = new QAction(QIcon(":/icons/add.png"), u8"完整内容", this);

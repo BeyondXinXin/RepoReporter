@@ -4,7 +4,8 @@
 #include <QObject>
 #include <QTableView>
 
-class LogModel;
+class LogTableModel;
+class LogTableDelegate;
 
 class LogTableView : public QTableView {
 	Q_OBJECT
@@ -44,7 +45,8 @@ private:
 	QAction* m_CopyAuthorNameAction;
 	QAction* m_CopyInformationAction;
 
-	LogModel* m_Model;
+	LogTableModel* m_Model;
+	LogTableDelegate* m_Delegate;
 
 	QString m_CurPaht;
 };
