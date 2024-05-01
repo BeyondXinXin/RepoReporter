@@ -123,7 +123,7 @@ QTableView::item:selected {
               <string notr="true"/>
              </property>
             </widget>
-            <widget class="QTextEdit" name="editMessage">
+            <widget class="MessageTextEdit" name="editMessage">
              <property name="readOnly">
               <bool>true</bool>
              </property>
@@ -155,6 +155,11 @@ QTableView::item:selected {
    <class>FileTableView</class>
    <extends>QTableWidget</extends>
    <header>FileTableView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MessageTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>MessageTextEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
