@@ -29,13 +29,20 @@ protected:
 private slots:
 
 	void InitUI();
+	void InitConnect();
 
-	void AddProject();
 	void SlotSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+	void OnCopyFullContentAction();
+	void OnCopyAuthorNameAction();
+	void OnCopyInformationAction();
 
 private:
 
-	QAction* m_AddAction;
+	QMenu* m_CopySubMenu;
+	QAction* m_CopyFullContentAction;
+	QAction* m_CopyAuthorNameAction;
+	QAction* m_CopyInformationAction;
 
 	LogModel* m_Model;
 

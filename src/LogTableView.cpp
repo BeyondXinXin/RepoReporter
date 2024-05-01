@@ -15,13 +15,8 @@ LogTableView::LogTableView(QWidget* parent)
 	m_Model = new LogModel(this);
 	setModel(m_Model);
 
-	m_AddAction = new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
-	connect(m_AddAction,      &QAction::triggered, this, &LogTableView::AddProject);
-
-	connect(selectionModel(), &QItemSelectionModel::selectionChanged,
-	        this, &LogTableView::SlotSelectionChanged);
-
 	InitUI();
+	InitConnect();
 }
 
 void LogTableView::ChangeProPath(const QString& path)
@@ -34,8 +29,8 @@ void LogTableView::contextMenuEvent(QContextMenuEvent* event)
 {
 	QMenu menu(this);
 
-	menu.addAction(m_AddAction);
-	menu.exec(event->globalPos());
+	menu.addMenu(m_CopySubMenu);
+	menu.exec(event->globalPos() - QPoint(20, 10));
 }
 
 void LogTableView::showEvent(QShowEvent* event)
@@ -82,8 +77,28 @@ void LogTableView::InitUI()
 	setShowGrid(false);
 }
 
-void LogTableView::AddProject()
+void LogTableView::InitConnect()
 {
+	connect(selectionModel(), &QItemSelectionModel::selectionChanged,
+	        this, &LogTableView::SlotSelectionChanged);
+
+
+	m_CopyFullContentAction = new QAction(QIcon(":/icons/add.png"), u8"完整内容", this);
+	connect(m_CopyFullContentAction, &QAction::triggered,
+	        this, &LogTableView::OnCopyFullContentAction);
+
+	m_CopyAuthorNameAction = new QAction(QIcon(":/icons/add.png"), u8"作者姓名", this);
+	connect(m_CopyAuthorNameAction, &QAction::triggered,
+	        this, &LogTableView::OnCopyAuthorNameAction);
+
+	m_CopyInformationAction = new QAction(QIcon(":/icons/add.png"), u8"信息", this);
+	connect(m_CopyInformationAction, &QAction::triggered,
+	        this, &LogTableView::OnCopyInformationAction);
+
+	m_CopySubMenu = new QMenu(u8"复制到剪贴板", this);
+	m_CopySubMenu->addAction(m_CopyFullContentAction);
+	m_CopySubMenu->addAction(m_CopyAuthorNameAction);
+	m_CopySubMenu->addAction(m_CopyInformationAction);
 }
 
 void LogTableView::SlotSelectionChanged(
@@ -122,4 +137,16 @@ void LogTableView::SlotSelectionChanged(
 
 	emit SgnChangeSelectLog(vers);
 	emit SgnUpdateDescription(descriptions.join("\n- - - - - - - - - - -\n"));
+}
+
+void LogTableView::OnCopyFullContentAction()
+{
+}
+
+void LogTableView::OnCopyAuthorNameAction()
+{
+}
+
+void LogTableView::OnCopyInformationAction()
+{
 }

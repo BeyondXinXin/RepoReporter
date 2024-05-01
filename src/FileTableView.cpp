@@ -1,6 +1,10 @@
 ﻿#include "FileTableView.h"
 
 #include <QHeaderView>
+#include <QAction>
+#include <QMenu>
+#include <QContextMenuEvent>
+#include <iostream>
 
 #include "FileModel.h"
 #include "ConfigManager.h"
@@ -12,6 +16,7 @@ FileTableView::FileTableView(QWidget* parent)
 	setModel(m_Model);
 
 	InitUI();
+	InitConnect();
 }
 
 void FileTableView::ChangeLog(const QList<QString>& versions)
@@ -26,6 +31,22 @@ void FileTableView::ChangeProPath(const QString& path)
 
 void FileTableView::contextMenuEvent(QContextMenuEvent* event)
 {
+	QMenu menu(this);
+
+	menu.addAction(m_CompareWithBaseAction);
+	menu.addSeparator();
+	menu.addAction(m_ShowLogAction);
+	menu.addAction(m_ExportAction);
+	menu.addAction(m_SaveAsAction);
+	menu.addAction(m_OpenAction);
+	menu.addAction(m_BrowseAction);
+	menu.addSeparator();
+	menu.addAction(m_CompareAction);
+	menu.addAction(m_MarkCompareAction);
+	menu.addSeparator();
+	menu.addMenu(m_CopySubMenu);
+
+	menu.exec(event->globalPos() - QPoint(20, 10));
 }
 
 void FileTableView::showEvent(QShowEvent* event)
@@ -70,4 +91,75 @@ void FileTableView::InitUI()
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
 
 	setShowGrid(false);
+}
+
+void FileTableView::InitConnect()
+{
+	auto fun = [&](QAction *& action, const QString& iconPath, const QString& name,
+	               void (FileTableView::*SlogAction)())
+		   {
+			   action = new QAction(QIcon(iconPath), name, this);
+			   connect(action, &QAction::triggered, this, SlogAction);
+		   };
+
+	fun(m_CompareWithBaseAction,  "", u8"比较",    &FileTableView::OnCompareWithBaseAction);
+	fun(m_ShowLogAction,          "", u8"显示日志",  &FileTableView::OnShowLogAction);
+	fun(m_ExportAction,           "", u8"导出",    &FileTableView::OnExportAction);
+	fun(m_SaveAsAction,           "", u8"另存",    &FileTableView::OnSaveAsAction);
+	fun(m_OpenAction,             "", u8"打开",    &FileTableView::OnOpenAction);
+	fun(m_BrowseAction,           "", u8"浏览",    &FileTableView::OnBrowseAction);
+	fun(m_CompareAction,          "", u8"与标记比较", &FileTableView::OnCompareAction);
+	fun(m_MarkCompareAction,      "", u8"标记供比较", &FileTableView::OnMarkCompareAction);
+	fun(m_CopyFullPathAction,     "", u8"完整路径",  &FileTableView::OnCopyFullPathAction);
+	fun(m_CopyRelativePathAction, "", u8"相对路径",  &FileTableView::OnCopyRelativePathAction);
+	fun(m_CopyFileNameAction,     "", u8"文件名称",  &FileTableView::OnCopyFileNameAction);
+
+	m_CopySubMenu = new QMenu(u8"复制到剪贴板", this);
+	m_CopySubMenu->addAction(m_CopyFullPathAction);
+	m_CopySubMenu->addAction(m_CopyRelativePathAction);
+	m_CopySubMenu->addAction(m_CopyFileNameAction);
+}
+
+void FileTableView::OnCompareWithBaseAction()
+{
+}
+
+void FileTableView::OnShowLogAction()
+{
+}
+
+void FileTableView::OnExportAction()
+{
+}
+
+void FileTableView::OnSaveAsAction()
+{
+}
+
+void FileTableView::OnOpenAction()
+{
+}
+
+void FileTableView::OnBrowseAction()
+{
+}
+
+void FileTableView::OnCompareAction()
+{
+}
+
+void FileTableView::OnMarkCompareAction()
+{
+}
+
+void FileTableView::OnCopyFullPathAction()
+{
+}
+
+void FileTableView::OnCopyRelativePathAction()
+{
+}
+
+void FileTableView::OnCopyFileNameAction()
+{
 }
