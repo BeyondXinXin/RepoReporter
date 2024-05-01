@@ -4,14 +4,16 @@
 #include <QProcess>
 #include <QTimeZone>
 #include <QDir>
+#include <QRegularExpression>
 
 
-QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
+QList<VCLogEntry>VersionControlManager::FetchLog(const QString& repoPath)
 {
 	QList<VCLogEntry> logEntries;
 
 	// Check if repoPath exists
 	QDir repoDir(repoPath);
+
 	if (!repoDir.exists()) {
 		qInfo() << u8"仓库路径不存在:" << repoPath;
 		return logEntries;
@@ -38,6 +40,8 @@ QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
 	QString     outputStr(output);
 	QStringList lines = outputStr.split("\n");
 
+	QString dataFormat = "ddd MMM d HH:mm:ss yyyy";
+
 	foreach(const QString& line, lines)
 	{
 		QStringList parts = line.split("|");
@@ -48,7 +52,11 @@ QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
 			entry.version = parts[0];
 			entry.message = parts[1];
 			entry.author = parts[2];
-			entry.date = QLocale::c().toDateTime(parts[3], "ddd MMM d HH:mm:ss yyyy");
+			entry.date = QLocale::c().toDateTime(parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
+
+			qInfo() << parts[3];
+			qInfo() << entry.date;
+
 			logEntries.append(entry);
 		} else if (parts.size() > 0) {
 			if (!logEntries.isEmpty()) {
@@ -67,13 +75,15 @@ QList<VCLogEntry> VersionControlManager::FetchLog(const QString& repoPath)
 	return logEntries;
 }
 
-QList<VCFileEntry> VersionControlManager::GetChangesForVersion(const QString& repoPath, const QList<QString>& versions)
+QList<VCFileEntry>VersionControlManager::GetChangesForVersion(const QString& repoPath, const QList<QString>& versions)
 {
 	QList<VCFileEntry> fileEntries;
 
 	QProcess process;
+
 	process.setProgram("git");
 	QStringList args;
+
 	args << "show" << "--pretty=format:%n" << "--numstat";
 	foreach(auto version, versions)
 	{
@@ -99,14 +109,17 @@ QList<VCFileEntry> VersionControlManager::GetChangesForVersion(const QString& re
 			continue;
 		}
 		QStringList parts = line.split(QRegExp("\\s+"));
+
 		if (parts.size() < 3) {
 			continue;
 		}
 		QString filePath = parts[2];
 		VCFileEntry& entry = fileMap[filePath];
+
 		entry.addNum += parts[0].toInt();
 		entry.deleteNum += parts[1].toInt();
 		entry.filePath = filePath;
+
 		if ((entry.addNum > 0) && (entry.deleteNum > 0)) {
 			entry.operation = FileOperation::Modify;
 		} else if (entry.addNum > 0) {
@@ -115,6 +128,7 @@ QList<VCFileEntry> VersionControlManager::GetChangesForVersion(const QString& re
 			entry.operation = FileOperation::Delete;
 		}
 		QFileInfo fileInfo(filePath);
+
 		entry.extensionName = fileInfo.suffix();
 	}
 
