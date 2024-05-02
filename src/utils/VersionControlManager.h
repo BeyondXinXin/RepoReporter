@@ -23,6 +23,11 @@ public:
 	static void OpenFile(
 		const QString& repoPath, const QString& file, const QString& revision);
 
+	static void CompareFile(
+		const QString& repoPath,
+		const QString& file, const QString& revision,
+		const QString& markFile, const QString& markRrevision);
+
 	static void OpenFileDirectory(
 		const QString& repoPath, const QString& file);
 

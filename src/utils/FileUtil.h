@@ -23,12 +23,14 @@ public:
 
 	static bool DeleteFileOrFolder(const QString& strPath);
 
+	static QString GetFileName(const QString& path);
+
 	static QString GetFullPath(const QString& path);
 
 	static QString GetExistingDirectory(
 		QString defaultDir = QCoreApplication::applicationDirPath());
 
-	static QString GetFileName(
+	static QString GetExistingFile(
 		const QString& filter,
 		QString defaultDir = QCoreApplication::applicationDirPath());
 

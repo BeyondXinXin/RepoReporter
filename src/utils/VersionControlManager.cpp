@@ -67,7 +67,6 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 			} else if (file.trimmed().startsWith('R')) {
 				entry.operations << FileOperation::Rename;
 			}
-			qDebug() << file.trimmed();
 		}
 
 		logEntries.append(entry);
@@ -210,6 +209,49 @@ void VersionControlManager::OpenFile(
 
 	QUrl fileUrl = QUrl::fromLocalFile(outputPath);
 	QDesktopServices::openUrl(fileUrl);
+}
+
+void VersionControlManager::CompareFile(
+	const QString& repoPath,
+	const QString& file, const QString& revision,
+	const QString& markFile, const QString& markRrevision)
+{
+	QString configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+
+	QStringList outFileList;
+	QStringList revisionList{ revision, markRrevision };
+	QStringList fileList{ file, markFile };
+
+	for (int i = 0; i < revisionList.size(); i++) {
+		QFileInfo fileInfo = QFileInfo(fileList.at(i));
+		QString   outputPath = QString("%1/.tmp/%2-%3.%4")
+		                       .arg(configDir)
+		                       .arg(fileInfo.completeBaseName())
+		                       .arg(revisionList.at(i))
+		                       .arg(fileInfo.completeSuffix());
+
+		QProcess process;
+		process.setProgram("git");
+		QStringList args;
+		args << "show" << QString("%1:%2").arg(revisionList.at(i)).arg(fileList.at(i));
+		process.setArguments(args);
+		process.setWorkingDirectory(repoPath);
+		process.setStandardOutputFile(outputPath);
+		process.start();
+		process.waitForFinished(3000);
+
+		outFileList << outputPath;
+	}
+
+	QProcess process;
+	process.setProgram("TortoiseGitProc.exe");
+	QStringList args;
+	args << "/command:diff";
+	args << QString("/path:%1").arg(outFileList.at(0));
+	args << QString("/path2:%1").arg(outFileList.at(1));
+	process.setArguments(args);
+	process.setWorkingDirectory(FileUtil::GetFullPath(outFileList.at(0)));
+	process.startDetached();
 }
 
 void VersionControlManager::OpenFileDirectory(const QString& repoPath, const QString& file)

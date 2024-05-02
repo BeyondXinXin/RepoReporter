@@ -142,6 +142,8 @@ void FileTableView::InitConnect()
 	m_CopySubMenu->addAction(m_CopyRelativePathAction);
 	m_CopySubMenu->addAction(m_CopyFileNameAction);
 
+	m_CompareAction->setEnabled(false);
+
 	connect(selectionModel(), &QItemSelectionModel::selectionChanged,
 	        this, &FileTableView::SlotSelectionChanged);
 }
@@ -212,10 +214,27 @@ void FileTableView::OnBrowseAction()
 
 void FileTableView::OnCompareAction()
 {
+	QString CompareFile = m_Model->GetFileName(GetSelectIndexs().at(0));
+	QString CompareVersion = m_CurVersions.first();
+	if (!CompareFile.isEmpty() && !m_MarkCompareFile.isEmpty()) {
+		VersionControlManager::CompareFile(
+			m_CurPaht, CompareFile, CompareVersion, m_MarkCompareFile, m_MarkCompareVersion);
+	}
 }
 
 void FileTableView::OnMarkCompareAction()
 {
+	m_MarkCompareFile = m_Model->GetFileName(GetSelectIndexs().at(0));
+	m_MarkCompareVersion = m_CurVersions.first();
+
+	if (m_MarkCompareFile.isEmpty()) {
+		m_CompareAction->setText(u8"与标记比较");
+		m_CompareAction->setEnabled(false);
+	} else {
+		m_CompareAction->setText(
+			QString(u8"与'%1'比较").arg(FileUtil::GetFileName(m_MarkCompareFile)));
+		m_CompareAction->setEnabled(true);
+	}
 }
 
 void FileTableView::OnCopyFullPathAction()

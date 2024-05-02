@@ -84,6 +84,12 @@ bool FileUtil::DeleteFileOrFolder(const QString& strPath)
 	return true;
 }
 
+QString FileUtil::GetFileName(const QString& path)
+{
+	QFileInfo fileInfo(path);
+	return fileInfo.fileName();
+}
+
 QString FileUtil::GetFullPath(const QString& path)
 {
 	QFileInfo fileInfo(path);
@@ -95,7 +101,7 @@ QString FileUtil::GetExistingDirectory(QString defaultDir)
 	return QFileDialog::getExistingDirectory(nullptr, "选择文件夹", defaultDir);
 }
 
-QString FileUtil::GetFileName(const QString& filter, QString defaultDir)
+QString FileUtil::GetExistingFile(const QString& filter, QString defaultDir)
 {
 	return QFileDialog::getOpenFileName(nullptr, "选择文件", defaultDir, filter);
 }

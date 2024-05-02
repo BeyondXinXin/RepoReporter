@@ -39,8 +39,10 @@ private:
 	void OnExportAction();
 	void OnOpenAction();
 	void OnBrowseAction();
+
 	void OnCompareAction();
 	void OnMarkCompareAction();
+
 	void OnCopyFullPathAction();
 	void OnCopyRelativePathAction();
 	void OnCopyFileNameAction();
@@ -63,7 +65,11 @@ private:
 
 	FileTableModel* m_Model;
 	QString m_CurPaht;
+
 	QList<QString>m_CurVersions;
+
+	QString m_MarkCompareFile;
+	QString m_MarkCompareVersion;
 };
 
 #endif // LOGTABLEWIDGET_H
