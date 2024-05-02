@@ -1,5 +1,7 @@
 ﻿#include "LogTableModel.h"
 
+#include <QRegularExpression>
+
 #include "utils/VersionControlManager.h"
 
 
@@ -82,7 +84,12 @@ QVariant LogTableModel::data(const QModelIndex& index, int role) const
 
 		case 3: return entry.date.toString("yyyy/M/d hh:mm:ss");
 
-		case 4: return entry.message;
+		case 4: {
+			QString message = entry.message;
+			message.replace(QRegularExpression("\\n+"), " ");
+			message.replace(QRegularExpression("\\s+"), " ");
+			return message;
+		}
 
 		default: return QVariant();
 		}

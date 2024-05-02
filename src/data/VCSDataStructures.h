@@ -18,7 +18,8 @@
 enum class FileOperation {
 	Add,
 	Modify,
-	Delete
+	Delete,
+	Rename
 };
 Q_DECLARE_METATYPE(FileOperation)
 
@@ -31,6 +32,8 @@ inline QString FileOperationToString(FileOperation operation)
 
 	case FileOperation::Delete: return QStringLiteral("D");
 
+	case FileOperation::Rename: return QStringLiteral("R");
+
 	default: return QStringLiteral("Err");
 	}
 }
@@ -39,6 +42,7 @@ inline uint qHash(FileOperation key, uint seed = 0) noexcept
 {
 	return ::qHash(static_cast<int>(key), seed);
 }
+
 // --------------------- VCFileEntry ---------------------
 
 struct VCFileEntry {
@@ -47,18 +51,18 @@ struct VCFileEntry {
 	int addNum;
 	int deleteNum;
 	FileOperation operation;
-	
+
 	friend QDebug operator<<(QDebug dbg, const VCFileEntry& entry);
 };
 
 inline QDebug operator<<(QDebug dbg, const VCFileEntry& entry)
 {
 	dbg << "VCFileEntry("
-		<< "filePath:" << entry.filePath << ", "
-		<< "extensionName:" << entry.extensionName << ", "
-		<< "addNum:" << entry.addNum << ", "
-		<< "deleteNum:" << entry.deleteNum << ", "
-		<< "operation:" << FileOperationToString(entry.operation)<< ")";
+	    << "filePath:" << entry.filePath << ", "
+	    << "extensionName:" << entry.extensionName << ", "
+	    << "addNum:" << entry.addNum << ", "
+	    << "deleteNum:" << entry.deleteNum << ", "
+	    << "operation:" << FileOperationToString(entry.operation) << ")";
 	return dbg;
 }
 
@@ -66,7 +70,7 @@ inline QDebug operator<<(QDebug dbg, const VCFileEntry& entry)
 
 struct VCLogEntry {
 	QString version;
-	QSet<FileOperation> operations;
+	QSet<FileOperation>operations;
 	QString message;
 	QString author;
 	QDateTime date;

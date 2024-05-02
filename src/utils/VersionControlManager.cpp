@@ -22,52 +22,55 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 
 	args << "log" << "--all"
 	     << "--name-status"
-	     << "--pretty=format:%h|%s|%an|%ad"
+	     << "--pretty=format:%h|%B|%an|%ad|"
 	     << "--date=format-local:%c";
 	process.setArguments(args);
 	process.setWorkingDirectory(repoPath);
 	process.start();
 
 	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"运行 git log";
-		qInfo() << args;
-		qInfo() << u8"命令时出错。";
+		qInfo() << u8"运行 git log" << args << u8"命令时出错。";
 		return logEntries;
 	}
 
-	// Parse the output
-	QByteArray  output = process.readAllStandardOutput();
-	QString     outputStr(output);
-	QStringList lines = outputStr.split("\n");
-	QString     dataFormat = "ddd MMM d HH:mm:ss yyyy";
-
+	QString dataFormat = "ddd MMM d HH:mm:ss yyyy";
+	QString outputStr(process.readAllStandardOutput());
+	QStringList lines = outputStr.split("\n\n");
 
 	foreach(const QString& line, lines)
 	{
 		QStringList parts = line.split("|");
-
-		if (parts.size() == 4) {
-			VCLogEntry entry;
-
-			entry.version = parts[0];
-			entry.message = parts[1];
-			entry.author = parts[2];
-			entry.date = QLocale::c().toDateTime(
-				parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
-
-			logEntries.append(entry);
-		} else if (parts.size() > 0) {
-			if (!logEntries.isEmpty()) {
-				FileOperation operation = FileOperation::Modify;
-
-				if (parts[0].trimmed().startsWith('A')) {
-					operation = FileOperation::Add;
-				} else if (parts[0].trimmed().startsWith('D')) {
-					operation = FileOperation::Delete;
-				}
-				logEntries.last().operations << operation;
-			}
+		if (parts.size() != 5) {
+			continue;
 		}
+
+		VCLogEntry entry;
+		entry.version = parts[0];
+		entry.message = parts[1];
+		if (!entry.message.isEmpty() &&
+		    (entry.message.endsWith('\n') || entry.message.endsWith('\r'))) {
+			entry.message.chop(1);
+		}
+		entry.author = parts[2];
+		entry.date = QLocale::c().toDateTime(
+			parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
+
+		QStringList fileList = parts[4].split("\n");
+		foreach(QString file, fileList)
+		{
+			if (file.trimmed().startsWith('M')) {
+				entry.operations << FileOperation::Modify;
+			} else if (file.trimmed().startsWith('A')) {
+				entry.operations << FileOperation::Add;
+			} else if (file.trimmed().startsWith('D')) {
+				entry.operations << FileOperation::Delete;
+			} else if (file.trimmed().startsWith('R')) {
+				entry.operations << FileOperation::Rename;
+			}
+			qDebug() << file.trimmed();
+		}
+
+		logEntries.append(entry);
 	}
 
 

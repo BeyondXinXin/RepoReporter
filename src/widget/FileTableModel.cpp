@@ -46,7 +46,8 @@ QModelIndex FileTableModel::index(int row, int column, const QModelIndex& parent
 
 QModelIndex FileTableModel::parent(const QModelIndex& child) const
 {
-	return QModelIndex(); // 文件列表不是一个树形结构，所以不需要父索引
+	Q_UNUSED(child)
+	return QModelIndex();
 }
 
 int FileTableModel::rowCount(const QModelIndex& parent) const
