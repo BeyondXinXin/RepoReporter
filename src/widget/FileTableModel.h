@@ -16,6 +16,8 @@ public:
 
 	void UpdataFile(const QString& path, const QList<QString>& versions);
 
+	QString GetFileName(const QModelIndex& index)const;
+
 	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 	QModelIndex parent(const QModelIndex& child) const override;
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -25,7 +27,7 @@ public:
 
 private:
 
-	QList<VCFileEntry> m_Files;
+	QList<VCFileEntry>m_Files;
 };
 
 #endif // LOGMODEL_H

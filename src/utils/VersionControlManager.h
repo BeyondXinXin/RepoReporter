@@ -11,6 +11,17 @@ public:
 	static QList<VCLogEntry>FetchLog(const QString& repoPath, QString& curVersion);
 	static QList<VCFileEntry>GetChangesForVersion(
 		const QString& repoPath, const QList<QString>& versions);
+
+	static void ShowCompare(
+		const QString& repoPath, const QString& file,
+		const QString& startrev, const QString& endrev);
+
+	static void ShowLog(const QString& repoPath, const QString& file);
+
+	static void OpenFile(
+		const QString& repoPath, const QString& file, const QString& revision);
+
+	static void OpenFileDirectory(const QString& repoPath, const QString& file);
 };
 
 #endif // VERSIONCONTROLMANAGER_H

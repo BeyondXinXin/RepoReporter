@@ -14,7 +14,6 @@ public:
 	FileTableView(QWidget* parent = nullptr);
 
 	void ChangeLog(const QList<QString>& versions);
-
 	void ChangeProPath(const QString& path);
 
 Q_SIGNALS:
@@ -26,6 +25,7 @@ protected:
 	void contextMenuEvent(QContextMenuEvent* event) override;
 	void showEvent(QShowEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
+	void mouseDoubleClickEvent(QMouseEvent* event) override;
 
 private:
 
@@ -37,7 +37,6 @@ private:
 	void OnCompareWithBaseAction();
 	void OnShowLogAction();
 	void OnExportAction();
-	void OnSaveAsAction();
 	void OnOpenAction();
 	void OnBrowseAction();
 	void OnCompareAction();
@@ -46,12 +45,13 @@ private:
 	void OnCopyRelativePathAction();
 	void OnCopyFileNameAction();
 
+	QList<QModelIndex>GetSelectIndexs() const;
+
 private:
 
 	QAction* m_CompareWithBaseAction;
 	QAction* m_ShowLogAction;
 	QAction* m_ExportAction;
-	QAction* m_SaveAsAction;
 	QAction* m_OpenAction;
 	QAction* m_BrowseAction;
 	QAction* m_CompareAction;
@@ -63,6 +63,7 @@ private:
 
 	FileTableModel* m_Model;
 	QString m_CurPaht;
+	QList<QString>m_CurVersions;
 };
 
 #endif // LOGTABLEWIDGET_H

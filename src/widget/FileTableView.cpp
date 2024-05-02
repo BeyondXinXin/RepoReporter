@@ -5,9 +5,11 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <iostream>
+#include <QDesktopServices>
 
 #include "FileTableModel.h"
 #include "utils/ConfigManager.h"
+#include "utils/VersionControlManager.h"
 
 FileTableView::FileTableView(QWidget* parent)
 	: QTableView(parent)
@@ -22,6 +24,7 @@ FileTableView::FileTableView(QWidget* parent)
 void FileTableView::ChangeLog(const QList<QString>& versions)
 {
 	m_Model->UpdataFile(m_CurPaht, versions);
+	m_CurVersions = versions;
 }
 
 void FileTableView::ChangeProPath(const QString& path)
@@ -32,20 +35,28 @@ void FileTableView::ChangeProPath(const QString& path)
 void FileTableView::contextMenuEvent(QContextMenuEvent* event)
 {
 	QMenu menu(this);
-
-	menu.addAction(m_CompareWithBaseAction);
-	menu.addSeparator();
-	menu.addAction(m_ShowLogAction);
-	menu.addAction(m_ExportAction);
-	menu.addAction(m_SaveAsAction);
-	menu.addAction(m_OpenAction);
-	menu.addAction(m_BrowseAction);
-	menu.addSeparator();
-	menu.addAction(m_CompareAction);
-	menu.addAction(m_MarkCompareAction);
-	menu.addSeparator();
-	menu.addMenu(m_CopySubMenu);
-
+	QList<QModelIndex> selectedIndexs = GetSelectIndexs();
+	if (selectedIndexs.isEmpty()) {
+		return;
+	} else if (1 == selectedIndexs.size()) {
+		menu.addAction(m_CompareWithBaseAction);
+		menu.addSeparator();
+		menu.addAction(m_ShowLogAction);
+		menu.addAction(m_ExportAction);
+		menu.addAction(m_OpenAction);
+		menu.addAction(m_BrowseAction);
+		menu.addSeparator();
+		menu.addAction(m_CompareAction);
+		menu.addAction(m_MarkCompareAction);
+		menu.addSeparator();
+		menu.addMenu(m_CopySubMenu);
+	} else {
+		menu.addAction(m_CompareWithBaseAction);
+		menu.addSeparator();
+		menu.addAction(m_ExportAction);
+		menu.addSeparator();
+		menu.addMenu(m_CopySubMenu);
+	}
 	menu.exec(event->globalPos() - QPoint(20, 10));
 }
 
@@ -77,6 +88,18 @@ void FileTableView::hideEvent(QHideEvent* event)
 	ConfigManager::GetInstance().WriteList<int>("FileTableViewSectionSize", sizeList);
 }
 
+void FileTableView::mouseDoubleClickEvent(QMouseEvent* event)
+{
+	QModelIndex index = indexAt(event->pos());
+	if (index.isValid()) {
+		QModelIndex newIndex = index.sibling(index.row(), 0);
+		VersionControlManager::ShowCompare(
+			m_CurPaht, m_Model->GetFileName(newIndex),
+			m_CurVersions.last(), m_CurVersions.first());
+	}
+	QTableView::mouseDoubleClickEvent(event);
+}
+
 void FileTableView::InitUI()
 {
 	setDragEnabled(false);
@@ -105,7 +128,6 @@ void FileTableView::InitConnect()
 	fun(m_CompareWithBaseAction,  "", u8"比较",    &FileTableView::OnCompareWithBaseAction);
 	fun(m_ShowLogAction,          "", u8"显示日志",  &FileTableView::OnShowLogAction);
 	fun(m_ExportAction,           "", u8"导出",    &FileTableView::OnExportAction);
-	fun(m_SaveAsAction,           "", u8"另存",    &FileTableView::OnSaveAsAction);
 	fun(m_OpenAction,             "", u8"打开",    &FileTableView::OnOpenAction);
 	fun(m_BrowseAction,           "", u8"浏览",    &FileTableView::OnBrowseAction);
 	fun(m_CompareAction,          "", u8"与标记比较", &FileTableView::OnCompareAction);
@@ -147,26 +169,34 @@ void FileTableView::SlotSelectionChanged(
 
 void FileTableView::OnCompareWithBaseAction()
 {
+	QList<QModelIndex> selectedIndexs = GetSelectIndexs();
+	for (int i = 0; i < selectedIndexs.size(); i++) {
+		VersionControlManager::ShowCompare(
+			m_CurPaht, m_Model->GetFileName(selectedIndexs.at(i)),
+			m_CurVersions.last(), m_CurVersions.first());
+	}
 }
 
 void FileTableView::OnShowLogAction()
 {
+	QString filePath = m_Model->GetFileName(GetSelectIndexs().at(0));
+	VersionControlManager::ShowLog(m_CurPaht, filePath);
 }
 
 void FileTableView::OnExportAction()
 {
 }
 
-void FileTableView::OnSaveAsAction()
-{
-}
-
 void FileTableView::OnOpenAction()
 {
+	QString filePath = m_Model->GetFileName(GetSelectIndexs().at(0));
+	VersionControlManager::OpenFile(m_CurPaht, filePath, m_CurVersions.first());
 }
 
 void FileTableView::OnBrowseAction()
 {
+	QString filePath = m_Model->GetFileName(GetSelectIndexs().at(0));
+	VersionControlManager::OpenFileDirectory(m_CurPaht, filePath);
 }
 
 void FileTableView::OnCompareAction()
@@ -187,4 +217,24 @@ void FileTableView::OnCopyRelativePathAction()
 
 void FileTableView::OnCopyFileNameAction()
 {
+}
+
+QList<QModelIndex>FileTableView::GetSelectIndexs() const
+{
+	QModelIndexList indexes = selectionModel()->selection().indexes();
+	QSet<int> selectedRows;
+	QList<QModelIndex> selectedIndexs;
+	foreach(auto index, indexes)
+	{
+		if (selectedRows.contains(index.row())) {
+			continue;
+		}
+		selectedRows << index.row();
+		selectedIndexs << index;
+	}
+
+	for (int i = 0; i < selectedIndexs.size(); i++) {
+		selectedIndexs[i] = selectedIndexs.at(i).sibling(selectedIndexs.at(i).row(), 0);
+	}
+	return selectedIndexs;
 }

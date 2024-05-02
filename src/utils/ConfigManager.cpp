@@ -2,6 +2,8 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QStandardPaths>
+#include <QDir>
 
 ConfigManager& ConfigManager::GetInstance()
 {
@@ -23,4 +25,13 @@ void ConfigManager::WriteValue(const QString& key, const QVariant& value)
 
 ConfigManager::ConfigManager()
 	: m_settings(QApplication::organizationName(), QApplication::applicationName())
-{}
+{
+	QString configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+	QString tmpFilePath = configDir + "/.tmp/";
+	QDir    dir(tmpFilePath);
+	if (!dir.exists()) {
+		if (!dir.mkpath(tmpFilePath)) {
+			qInfo() << u8"无法创建缓存目录。";
+		}
+	}
+}

@@ -21,6 +21,16 @@ void FileTableModel::UpdataFile(const QString& path, const QList<QString>& versi
 	endResetModel();
 }
 
+QString FileTableModel::GetFileName(const QModelIndex& index) const
+{
+	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Files.size())) {
+		return "";
+	}
+
+	const VCFileEntry& entry = m_Files[index.row()];
+	return entry.filePath;
+}
+
 QModelIndex FileTableModel::index(int row, int column, const QModelIndex& parent) const
 {
 	if (!hasIndex(row, column, parent)) {
