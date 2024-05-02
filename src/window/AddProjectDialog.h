@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "vcdata/VCSDataStructures.h"
+#include "data/VCSDataStructures.h"
 
 namespace Ui
 {

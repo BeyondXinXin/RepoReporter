@@ -3,7 +3,7 @@
 
 #include <QAbstractItemModel>
 
-#include "vcdata/VCSDataStructures.h"
+#include "data/VCSDataStructures.h"
 
 class LogTableModel : public QAbstractItemModel {
 	Q_OBJECT

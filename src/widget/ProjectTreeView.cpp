@@ -12,8 +12,8 @@
 #include <QPalette>
 
 #include "ProjectTreeModel.h"
-#include "AddProjectDialog.h"
-#include "ConfigManager.h"
+#include "window/AddProjectDialog.h"
+#include "utils/ConfigManager.h"
 
 ProjectTreeView::ProjectTreeView(QWidget* parent)
 	: QTreeView(parent)

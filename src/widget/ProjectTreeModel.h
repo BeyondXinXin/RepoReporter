@@ -7,7 +7,7 @@
 #include <QMimeData>
 #include <QJsonArray>
 
-#include "vcdata/VCSDataStructures.h"
+#include "data/VCSDataStructures.h"
 
 class ProjectTreeModel : public QAbstractItemModel {
 	Q_OBJECT

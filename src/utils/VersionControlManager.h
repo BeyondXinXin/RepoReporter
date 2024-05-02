@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "vcdata/VCSDataStructures.h"
+#include "data/VCSDataStructures.h"
 
 class VersionControlManager {
 public:

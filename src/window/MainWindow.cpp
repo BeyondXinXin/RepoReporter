@@ -6,8 +6,8 @@
 #include <QStandardItem>
 #include <QScreen>
 
-#include "ConfigManager.h"
-#include "SystemTrayManager.h"
+#include "utils/ConfigManager.h"
+#include "utils/SystemTrayManager.h"
 
 
 MainWindow::MainWindow(QWidget* parent)

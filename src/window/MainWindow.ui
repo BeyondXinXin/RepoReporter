@@ -233,22 +233,22 @@ QTableView::item:selected {
   <customwidget>
    <class>ProjectTreeView</class>
    <extends>QTreeView</extends>
-   <header>ProjectTreeView.h</header>
+   <header>widget/ProjectTreeView.h</header>
   </customwidget>
   <customwidget>
    <class>LogTableView</class>
    <extends>QTableWidget</extends>
-   <header>LogTableView.h</header>
+   <header>widget/LogTableView.h</header>
   </customwidget>
   <customwidget>
    <class>FileTableView</class>
    <extends>QTableWidget</extends>
-   <header>FileTableView.h</header>
+   <header>widget/FileTableView.h</header>
   </customwidget>
   <customwidget>
    <class>MessageTextEdit</class>
    <extends>QTextEdit</extends>
-   <header>MessageTextEdit.h</header>
+   <header>widget/MessageTextEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-#include "VersionControlManager.h"
+#include "utils/VersionControlManager.h"
 
 FileTableModel::FileTableModel(QObject* parent)
 	: QAbstractItemModel(parent)

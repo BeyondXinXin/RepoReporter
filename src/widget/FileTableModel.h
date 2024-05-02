@@ -4,7 +4,7 @@
 #include <QAbstractItemModel>
 #include <QMap>
 
-#include "vcdata/VCSDataStructures.h"
+#include "data/VCSDataStructures.h"
 
 class FileTableModel : public QAbstractItemModel {
 	Q_OBJECT

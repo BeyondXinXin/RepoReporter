@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "FileTableModel.h"
-#include "ConfigManager.h"
+#include "utils/ConfigManager.h"
 
 FileTableView::FileTableView(QWidget* parent)
 	: QTableView(parent)

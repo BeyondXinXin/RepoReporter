@@ -6,8 +6,8 @@
 #include <QContextMenuEvent>
 
 #include "LogTableModel.h"
-#include "VersionControlManager.h"
-#include "ConfigManager.h"
+#include "utils/VersionControlManager.h"
+#include "utils/ConfigManager.h"
 #include "LogTableDelegate.h"
 
 LogTableView::LogTableView(QWidget* parent)

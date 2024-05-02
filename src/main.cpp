@@ -4,11 +4,8 @@
 #include <QScreen>
 #include <QThread>
 
-#include "MainWindow.h"
-#include "ConfigManager.h"
-#include "LogManager.h"
-#include "SystemTrayManager.h"
-
+#include "window/MainWindow.h"
+#include "utils/LogManager.h"
 
 int main(int argc, char* argv[])
 {

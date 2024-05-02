@@ -1,6 +1,6 @@
 ﻿#include "LogTableModel.h"
 
-#include "VersionControlManager.h"
+#include "utils/VersionControlManager.h"
 
 
 LogTableModel::LogTableModel(QObject* parent)
