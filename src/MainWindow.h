@@ -25,6 +25,11 @@ protected:
 
 private:
 
+	void InitUI();
+	void InitConnect();
+
+private:
+
 	Ui::MainWindow* ui;
 };
 #endif // MAINWINDOW_H

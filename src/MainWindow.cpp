@@ -4,8 +4,10 @@
 #include <QDebug>
 #include <QFile>
 #include <QStandardItem>
+#include <QScreen>
 
 #include "ConfigManager.h"
+#include "SystemTrayManager.h"
 
 
 MainWindow::MainWindow(QWidget* parent)
@@ -13,24 +15,18 @@ MainWindow::MainWindow(QWidget* parent)
 	, ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+	InitUI();
+	InitConnect();
 
-	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
-	        ui->logTableView, &LogTableView::ChangeProPath);
-
-	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
-	        ui->fileTableView, &FileTableView::ChangeProPath);
-
-	connect(ui->logTableView,    &LogTableView::SgnChangeSelectLog,
-	        ui->fileTableView, &FileTableView::ChangeLog);
-
-	connect(ui->logTableView,    &LogTableView::SgnUpdateDescription,
-	        this, [&](const QString& str){
-		ui->editMessage->setText(str);
-	});
+	SystemTrayManager::Instance()->setMainWidget(this);
+	qInfo() << u8"软件启动。";
 }
 
 MainWindow::~MainWindow()
 {
+	qInfo() << u8"软件关闭。";
+	ConfigManager::GetInstance().WriteValue("LastWindowSize", size());
+	ConfigManager::GetInstance().WriteValue("LastWindowPosition", pos());
 	delete ui;
 }
 
@@ -55,4 +51,44 @@ void MainWindow::hideEvent(QHideEvent* event)
 		"LevelSplitterSize", ui->levelSplitter->sizes());
 
 	QMainWindow::hideEvent(event);
+}
+
+void MainWindow::InitUI()
+{
+	QSize lastSize = ConfigManager::GetInstance()
+	                 .ReadValue("LastWindowSize").toSize();
+	if (!lastSize.isValid()) {
+		QScreen* screen = QGuiApplication::screenAt(QCursor::pos());
+		QRect    screenRect = screen->geometry();
+		QSize    screenSize = screenRect.size();
+		QSize    windowSize = screenSize / 2;
+		lastSize = windowSize;
+	}
+	resize(lastSize);
+
+	QPoint lastPosition = ConfigManager::GetInstance()
+	                      .ReadValue("LastWindowPosition").toPoint();
+	if (lastPosition.isNull()) {
+		QScreen* screen = QGuiApplication::screenAt(QCursor::pos());
+		QRect    screenRect = screen->geometry();
+		lastPosition = screenRect.center() - rect().center();
+	}
+	move(lastPosition);
+}
+
+void MainWindow::InitConnect()
+{
+	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
+	        ui->logTableView, &LogTableView::ChangeProPath);
+
+	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
+	        ui->fileTableView, &FileTableView::ChangeProPath);
+
+	connect(ui->logTableView,    &LogTableView::SgnChangeSelectLog,
+	        ui->fileTableView, &FileTableView::ChangeLog);
+
+	connect(ui->logTableView,    &LogTableView::SgnUpdateDescription,
+	        this, [&](const QString& str){
+		ui->editMessage->setText(str);
+	});
 }

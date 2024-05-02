@@ -78,9 +78,9 @@ void LogManager::LogMessageOutput(QtMsgType type,
 	}
 	}
 	QString currentDateTime = QDateTime::currentDateTime()
-	                          .toString("yyyy-MM-dd hh:mm:ss:zzz");
+	                          .toString("hh:mm:ss");
 	QString currentThreadName = QThread::currentThread()->objectName();
-	QString message = QString("%1 [%2] %3 - %4 %5 ")
+	QString message = QString("%1 [%2] %3 %4 %5 ")
 	                  .arg(currentDateTime)
 	                  .arg(currentThreadName)
 	                  .arg(text)
