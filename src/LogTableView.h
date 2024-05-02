@@ -21,6 +21,8 @@ Q_SIGNALS:
 	void SgnChangeSelectLog(const QList<QString>& versions);
 	void SgnUpdateDescription(const QString& str);
 
+	void SgnStateLabChange(const int& index, const int& num);
+
 protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;

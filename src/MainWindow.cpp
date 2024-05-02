@@ -91,4 +91,41 @@ void MainWindow::InitConnect()
 	        this, [&](const QString& str){
 		ui->editMessage->setText(str);
 	});
+
+	connect(ui->logTableView, &LogTableView::SgnStateLabChange,
+	        this, &MainWindow::UpdateStateLab);
+	
+	connect(ui->fileTableView, &FileTableView::SgnStateLabChange,
+			this, &MainWindow::UpdateStateLab);
+}
+
+void MainWindow::UpdateStateLab(const int& index, const int& num)
+{
+	static int num1 = 0, num2 = 0, num3 = 0;
+	switch (index) {
+	case 0: {
+		num1 = num;
+		break;
+	}
+
+	case 1: {
+		num2 = num;
+		break;
+	}
+
+	case 2: {
+		num3 = num;
+		break;
+	}
+
+	default: {
+		num1 = num;
+		num2 = num;
+		num3 = num;
+		break;
+	}
+	}
+
+	ui->labState->setText(QString(u8"正在显示%1个版本，已选择%2个版本，已选择%3个文件。")
+	                      .arg(num1).arg(num2).arg(num3));
 }

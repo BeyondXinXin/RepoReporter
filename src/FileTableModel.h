@@ -6,13 +6,13 @@
 
 #include "vcdata/VCSDataStructures.h"
 
-class FileModel : public QAbstractItemModel {
+class FileTableModel : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
 
-	explicit FileModel(QObject* parent = nullptr);
-	~FileModel() override;
+	explicit FileTableModel(QObject* parent = nullptr);
+	~FileTableModel() override;
 
 	void UpdataFile(const QString& path, const QList<QString>& versions);
 

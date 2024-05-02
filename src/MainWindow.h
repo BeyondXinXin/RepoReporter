@@ -28,6 +28,8 @@ private:
 	void InitUI();
 	void InitConnect();
 
+	void UpdateStateLab(const int& index, const int& num);
+
 private:
 
 	Ui::MainWindow* ui;

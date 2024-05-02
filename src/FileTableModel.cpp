@@ -1,17 +1,17 @@
-﻿#include "FileModel.h"
+﻿#include "FileTableModel.h"
 
 #include <QDebug>
 
 #include "VersionControlManager.h"
 
-FileModel::FileModel(QObject* parent)
+FileTableModel::FileTableModel(QObject* parent)
 	: QAbstractItemModel(parent)
 {}
 
-FileModel::~FileModel()
+FileTableModel::~FileTableModel()
 {}
 
-void FileModel::UpdataFile(const QString& path, const QList<QString>& versions)
+void FileTableModel::UpdataFile(const QString& path, const QList<QString>& versions)
 {
 	beginResetModel();
 	m_Files.clear();
@@ -21,7 +21,7 @@ void FileModel::UpdataFile(const QString& path, const QList<QString>& versions)
 	endResetModel();
 }
 
-QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex FileTableModel::index(int row, int column, const QModelIndex& parent) const
 {
 	if (!hasIndex(row, column, parent)) {
 		return QModelIndex();
@@ -34,12 +34,12 @@ QModelIndex FileModel::index(int row, int column, const QModelIndex& parent) con
 	}
 }
 
-QModelIndex FileModel::parent(const QModelIndex& child) const
+QModelIndex FileTableModel::parent(const QModelIndex& child) const
 {
 	return QModelIndex(); // 文件列表不是一个树形结构，所以不需要父索引
 }
 
-int FileModel::rowCount(const QModelIndex& parent) const
+int FileTableModel::rowCount(const QModelIndex& parent) const
 {
 	if (parent.isValid()) {
 		return 0;
@@ -47,13 +47,13 @@ int FileModel::rowCount(const QModelIndex& parent) const
 	return m_Files.size();
 }
 
-int FileModel::columnCount(const QModelIndex& parent) const
+int FileTableModel::columnCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent);
 	return 5;
 }
 
-QVariant FileModel::data(const QModelIndex& index, int role) const
+QVariant FileTableModel::data(const QModelIndex& index, int role) const
 {
 	if (!index.isValid()) {
 		return QVariant();
@@ -86,7 +86,7 @@ QVariant FileModel::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
-QVariant FileModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant FileTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 	if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal)) {
 		switch (section) {

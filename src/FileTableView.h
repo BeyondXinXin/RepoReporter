@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QTableView>
 
-class FileModel;
+class FileTableModel;
 
 class FileTableView : public QTableView {
 	Q_OBJECT
@@ -17,6 +17,10 @@ public:
 
 	void ChangeProPath(const QString& path);
 
+Q_SIGNALS:
+
+	void SgnStateLabChange(const int& index, const int& num);
+
 protected:
 
 	void contextMenuEvent(QContextMenuEvent* event) override;
@@ -27,6 +31,8 @@ private:
 
 	void InitUI();
 	void InitConnect();
+
+	void SlotSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
 	void OnCompareWithBaseAction();
 	void OnShowLogAction();
@@ -55,7 +61,7 @@ private:
 	QAction* m_CopyRelativePathAction;
 	QAction* m_CopyFileNameAction;
 
-	FileModel* m_Model;
+	FileTableModel* m_Model;
 	QString m_CurPaht;
 };
 

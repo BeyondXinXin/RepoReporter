@@ -6,13 +6,13 @@
 #include <QContextMenuEvent>
 #include <iostream>
 
-#include "FileModel.h"
+#include "FileTableModel.h"
 #include "ConfigManager.h"
 
 FileTableView::FileTableView(QWidget* parent)
 	: QTableView(parent)
 {
-	m_Model = new FileModel(this);
+	m_Model = new FileTableModel(this);
 	setModel(m_Model);
 
 	InitUI();
@@ -118,6 +118,31 @@ void FileTableView::InitConnect()
 	m_CopySubMenu->addAction(m_CopyFullPathAction);
 	m_CopySubMenu->addAction(m_CopyRelativePathAction);
 	m_CopySubMenu->addAction(m_CopyFileNameAction);
+
+	connect(selectionModel(), &QItemSelectionModel::selectionChanged,
+	        this, &FileTableView::SlotSelectionChanged);
+}
+
+void FileTableView::SlotSelectionChanged(
+	const QItemSelection& selected, const QItemSelection& deselected)
+{
+	Q_UNUSED(deselected)
+	Q_UNUSED(selected)
+
+	QModelIndexList indexes = selectionModel()->selection().indexes();
+	if (indexes.isEmpty()) {
+		emit SgnStateLabChange(1, 0);
+		return;
+	}
+	QSet<int> selectedRows;
+	foreach(auto index, indexes)
+	{
+		if (selectedRows.contains(index.row())) {
+			continue;
+		}
+		selectedRows << index.row();
+	}
+	emit SgnStateLabChange(2, selectedRows.size());
 }
 
 void FileTableView::OnCompareWithBaseAction()

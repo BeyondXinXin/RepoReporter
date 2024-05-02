@@ -27,6 +27,8 @@ void LogTableView::ChangeProPath(const QString& path)
 {
 	m_CurPaht = path;
 	m_Model->UpdataLog(path);
+	emit SgnStateLabChange(-1, 0);
+	emit SgnStateLabChange(0, m_Model->rowCount());
 }
 
 void LogTableView::contextMenuEvent(QContextMenuEvent* event)
@@ -118,7 +120,9 @@ void LogTableView::SlotSelectionChanged(
 	QItemSelection  range = model->selection();
 	QModelIndexList indexes = range.indexes();
 
+
 	if (indexes.isEmpty()) {
+		emit SgnStateLabChange(1, 0);
 		return;
 	}
 
@@ -142,6 +146,7 @@ void LogTableView::SlotSelectionChanged(
 		}
 	}
 
+	emit SgnStateLabChange(1, descriptions.size());
 	emit SgnChangeSelectLog(vers);
 	emit SgnUpdateDescription(descriptions.join("\n- - - - - - - - - - -\n"));
 }
