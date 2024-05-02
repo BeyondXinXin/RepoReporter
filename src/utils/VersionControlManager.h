@@ -8,7 +8,9 @@
 class VersionControlManager {
 public:
 
-	static QList<VCLogEntry>FetchLog(const QString& repoPath, QString& curVersion);
+	static QList<VCLogEntry>FetchLog(
+		const QString& repoPath, QString& curVersion);
+
 	static QList<VCFileEntry>GetChangesForVersion(
 		const QString& repoPath, const QList<QString>& versions);
 
@@ -21,7 +23,12 @@ public:
 	static void OpenFile(
 		const QString& repoPath, const QString& file, const QString& revision);
 
-	static void OpenFileDirectory(const QString& repoPath, const QString& file);
+	static void OpenFileDirectory(
+		const QString& repoPath, const QString& file);
+
+	static void ExportFile(
+		const QString& repoPath, const QStringList& files,
+		const QString& revision, const QString& targetPath);
 };
 
 #endif // VERSIONCONTROLMANAGER_H

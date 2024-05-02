@@ -10,6 +10,7 @@
 #include "FileTableModel.h"
 #include "utils/ConfigManager.h"
 #include "utils/VersionControlManager.h"
+#include "utils/FileUtil.h"
 
 FileTableView::FileTableView(QWidget* parent)
 	: QTableView(parent)
@@ -185,6 +186,16 @@ void FileTableView::OnShowLogAction()
 
 void FileTableView::OnExportAction()
 {
+	QString targetPath = FileUtil::GetExistingDirectory();
+	if (targetPath.isEmpty()) {
+		return;
+	}
+	QStringList files;
+	foreach(auto index, GetSelectIndexs())
+	{
+		files << m_Model->GetFileName(index);
+	}
+	VersionControlManager::ExportFile(m_CurPaht, files, m_CurVersions.first(), targetPath);
 }
 
 void FileTableView::OnOpenAction()

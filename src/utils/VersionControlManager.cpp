@@ -9,6 +9,8 @@
 #include <QDesktopServices>
 #include <QUrl>
 
+#include "FileUtil.h"
+
 QList<VCLogEntry>VersionControlManager::FetchLog(
 	const QString& repoPath, QString& curVersion)
 {
@@ -191,7 +193,7 @@ void VersionControlManager::OpenFile(
 	                       .arg(revision)
 	                       .arg(outputInfo.completeSuffix());
 
-	QDir().mkpath(QFileInfo(outputPath).absolutePath());
+	FileUtil::DirMake(outputPath);
 
 	QProcess process;
 	process.setProgram("git");
@@ -201,7 +203,7 @@ void VersionControlManager::OpenFile(
 	process.setWorkingDirectory(repoPath);
 	process.setStandardOutputFile(outputPath);
 	process.start();
-	process.waitForFinished(-1);
+	process.waitForFinished(3000);
 
 	QUrl fileUrl = QUrl::fromLocalFile(outputPath);
 	QDesktopServices::openUrl(fileUrl);
@@ -211,20 +213,29 @@ void VersionControlManager::OpenFileDirectory(const QString& repoPath, const QSt
 {
 	QFileInfo fileInfo(repoPath + "/" + file);
 	QString   directory = fileInfo.absolutePath();
-	int iterations = 0;
+	FileUtil::OpenFileBrowser(directory);
+}
 
-	while (!QDir(directory).exists()) {
-		if (directory == QDir::rootPath()) {
-			break;
-		}
-		QDir parentDir(directory);
-		parentDir.cdUp();
-		directory = parentDir.path();
-		iterations++;
-		if (iterations > 20) {
-			QDesktopServices::openUrl(QUrl("file:///"));
-			return;
-		}
+void VersionControlManager::ExportFile(
+	const QString& repoPath, const QStringList& files,
+	const QString& revision, const QString& targetPath)
+{
+	QString lastFolderName = QDir(repoPath).dirName();
+	QString outputPath = QString("%1/%2/").arg(targetPath).arg(lastFolderName);
+
+	foreach(const QString& file, files)
+	{
+		QString outputFilePath = outputPath + file;
+		FileUtil::DirMake(outputFilePath);
+
+		QProcess process;
+		process.setProgram("git");
+		QStringList args;
+		args << "show" << QString("%1:%2").arg(revision).arg(file);
+		process.setArguments(args);
+		process.setWorkingDirectory(repoPath);
+		process.setStandardOutputFile(outputFilePath);
+		process.start();
+		process.waitForFinished(3000);
 	}
-	QDesktopServices::openUrl(QUrl::fromLocalFile(directory));
 }
