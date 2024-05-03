@@ -46,6 +46,26 @@ QString LogTableModel::GetIndexMessage(const QModelIndex& index) const
 	return entry.message;
 }
 
+QString LogTableModel::GetIndexAuthor(const QModelIndex& index) const
+{
+	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Logs.size())) {
+		return -1;
+	}
+	const VCLogEntry& entry = m_Logs[index.row()];
+
+	return entry.author;
+}
+
+VCLogEntry LogTableModel::GetIndexLogEntry(const QModelIndex& index) const
+{
+	if (!index.isValid() || (index.row() < 0) || (index.row() >= m_Logs.size())) {
+		return VCLogEntry();
+	}
+	const VCLogEntry& entry = m_Logs[index.row()];
+
+	return entry;
+}
+
 int LogTableModel::rowCount(const QModelIndex& parent) const
 {
 	if (parent.isValid()) {

@@ -4,11 +4,15 @@
 #include <QMenu>
 #include <QTableWidget>
 #include <QContextMenuEvent>
+#include <QGuiApplication>
+#include <QClipboard>
 
 #include "LogTableModel.h"
+#include "LogTableDelegate.h"
 #include "utils/VersionControlManager.h"
 #include "utils/ConfigManager.h"
-#include "LogTableDelegate.h"
+#include "utils/FileUtil.h"
+
 
 LogTableView::LogTableView(QWidget* parent)
 	: QTableView(parent)
@@ -116,26 +120,16 @@ void LogTableView::SlotSelectionChanged(
 	Q_UNUSED(deselected)
 	Q_UNUSED(selected)
 
-	QItemSelectionModel* model = selectionModel();
-	QItemSelection  range = model->selection();
-	QModelIndexList indexes = range.indexes();
-
-
-	if (indexes.isEmpty()) {
+	QList<QModelIndex>selectIndexs = GetSelectIndexs();
+	if (selectIndexs.isEmpty()) {
 		emit SgnStateLabChange(1, 0);
 		return;
 	}
 
-	QSet<int> selectedRows;
 	QList<QString> vers;
 	QStringList    descriptions;
-
-	foreach(auto index, indexes)
+	foreach(auto index, selectIndexs)
 	{
-		if (selectedRows.contains(index.row())) {
-			continue;
-		}
-		selectedRows << index.row();
 		vers << m_Model->GetIndexVersion(index);
 		descriptions << m_Model->GetIndexMessage(index);
 	}
@@ -153,12 +147,58 @@ void LogTableView::SlotSelectionChanged(
 
 void LogTableView::OnCopyFullContentAction()
 {
+	QStringList contentStrs;
+	foreach(auto index, GetSelectIndexs())
+	{
+		VCLogEntry entry = m_Model->GetIndexLogEntry(index);
+		contentStrs << QString(u8"版本:%1\n作者：%2\n日期：%3\n信息：\n%4")
+		        .arg(entry.version)
+		        .arg(entry.author)
+		        .arg(entry.date.toString("yyyy/M/d hh:mm:ss"))
+		        .arg(entry.message);
+	}
+	QClipboard* clipboard = QGuiApplication::clipboard();
+	clipboard->setText(contentStrs.join("\n\n\n"));
 }
 
 void LogTableView::OnCopyAuthorNameAction()
 {
+	QStringList authorStrs;
+	foreach(auto index, GetSelectIndexs())
+	{
+		authorStrs << m_Model->GetIndexAuthor(index);
+	}
+	QClipboard* clipboard = QGuiApplication::clipboard();
+	clipboard->setText(authorStrs.join("\n"));
 }
 
 void LogTableView::OnCopyInformationAction()
 {
+	QStringList masageStrs;
+	foreach(auto index, GetSelectIndexs())
+	{
+		masageStrs << m_Model->GetIndexMessage(index);
+	}
+	QClipboard* clipboard = QGuiApplication::clipboard();
+	clipboard->setText(masageStrs.join("\n\n"));
+}
+
+QList<QModelIndex>LogTableView::GetSelectIndexs() const
+{
+	QModelIndexList indexes = selectionModel()->selection().indexes();
+	QSet<int> selectedRows;
+	QList<QModelIndex> selectedIndexs;
+	foreach(auto index, indexes)
+	{
+		if (selectedRows.contains(index.row())) {
+			continue;
+		}
+		selectedRows << index.row();
+		selectedIndexs << index;
+	}
+
+	for (int i = 0; i < selectedIndexs.size(); i++) {
+		selectedIndexs[i] = selectedIndexs.at(i).sibling(selectedIndexs.at(i).row(), 0);
+	}
+	return selectedIndexs;
 }

@@ -40,6 +40,8 @@ private slots:
 	void OnCopyAuthorNameAction();
 	void OnCopyInformationAction();
 
+	QList<QModelIndex>GetSelectIndexs() const;
+
 private:
 
 	QMenu* m_CopySubMenu;

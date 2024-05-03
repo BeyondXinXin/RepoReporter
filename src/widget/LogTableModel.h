@@ -17,6 +17,8 @@ public:
 
 	QString GetIndexVersion(const QModelIndex& index)const;
 	QString GetIndexMessage(const QModelIndex& index)const;
+	QString GetIndexAuthor(const QModelIndex& index)const;
+	VCLogEntry GetIndexLogEntry(const QModelIndex& index)const;
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
