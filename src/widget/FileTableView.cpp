@@ -6,6 +6,8 @@
 #include <QContextMenuEvent>
 #include <iostream>
 #include <QDesktopServices>
+#include <QClipboard>
+#include <QGuiApplication>
 
 #include "FileTableModel.h"
 #include "utils/ConfigManager.h"
@@ -188,7 +190,7 @@ void FileTableView::OnShowLogAction()
 
 void FileTableView::OnExportAction()
 {
-	QString targetPath = FileUtil::GetExistingDirectory();
+	QString targetPath = FileUtil::SelectDirectory();
 	if (targetPath.isEmpty()) {
 		return;
 	}
@@ -232,21 +234,45 @@ void FileTableView::OnMarkCompareAction()
 		m_CompareAction->setEnabled(false);
 	} else {
 		m_CompareAction->setText(
-			QString(u8"与'%1'比较").arg(FileUtil::GetFileName(m_MarkCompareFile)));
+			QString(u8"与'%1'比较").arg(FileUtil::GetFileNameFromPath(m_MarkCompareFile)));
 		m_CompareAction->setEnabled(true);
 	}
 }
 
 void FileTableView::OnCopyFullPathAction()
 {
+	QStringList filePaths;
+	foreach(auto index, GetSelectIndexs())
+	{
+		filePaths << FileUtil::GetFullAbsolutePath(m_Model->GetFileName(index));
+	}
+	QString filePath = filePaths.join("\n");
+	QClipboard* clipboard = QGuiApplication::clipboard();
+	clipboard->setText(filePath);
 }
 
 void FileTableView::OnCopyRelativePathAction()
 {
+	QStringList filePaths;
+	foreach(auto index, GetSelectIndexs())
+	{
+		filePaths << m_Model->GetFileName(index);
+	}
+	QString filePath = filePaths.join("\n");
+	QClipboard* clipboard = QGuiApplication::clipboard();
+	clipboard->setText(filePath);
 }
 
 void FileTableView::OnCopyFileNameAction()
 {
+	QStringList fileNames;
+	foreach(auto index, GetSelectIndexs())
+	{
+		fileNames << FileUtil::GetFileNameFromPath(m_Model->GetFileName(index));
+	}
+	QString fileName = fileNames.join("\n");
+	QClipboard* clipboard = QGuiApplication::clipboard();
+	clipboard->setText(fileName);
 }
 
 QList<QModelIndex>FileTableView::GetSelectIndexs() const

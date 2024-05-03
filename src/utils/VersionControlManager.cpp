@@ -250,7 +250,7 @@ void VersionControlManager::CompareFile(
 	args << QString("/path:%1").arg(outFileList.at(0));
 	args << QString("/path2:%1").arg(outFileList.at(1));
 	process.setArguments(args);
-	process.setWorkingDirectory(FileUtil::GetFullPath(outFileList.at(0)));
+	process.setWorkingDirectory(FileUtil::GetDirectoryFromPath(outFileList.at(0)));
 	process.startDetached();
 }
 
@@ -258,7 +258,7 @@ void VersionControlManager::OpenFileDirectory(const QString& repoPath, const QSt
 {
 	QFileInfo fileInfo(repoPath + "/" + file);
 	QString   directory = fileInfo.absolutePath();
-	FileUtil::OpenFileBrowser(directory);
+	FileUtil::OpenDirectoryInExplorer(directory);
 }
 
 void VersionControlManager::ExportFile(

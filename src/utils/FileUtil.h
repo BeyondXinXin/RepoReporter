@@ -23,18 +23,20 @@ public:
 
 	static bool DeleteFileOrFolder(const QString& strPath);
 
-	static QString GetFileName(const QString& path);
+	static QString GetFileNameFromPath(const QString& path);
 
-	static QString GetFullPath(const QString& path);
+	static QString GetDirectoryFromPath(const QString& path);
 
-	static QString GetExistingDirectory(
+	static QString GetFullAbsolutePath(const QString& path);
+
+	static QString SelectDirectory(
 		QString defaultDir = QCoreApplication::applicationDirPath());
 
-	static QString GetExistingFile(
+	static QString SelectFile(
 		const QString& filter,
 		QString defaultDir = QCoreApplication::applicationDirPath());
 
-	static void OpenFileBrowser(const QString& path);
+	static void OpenDirectoryInExplorer(const QString& path);
 };
 
 #endif // FILEUTIL_H

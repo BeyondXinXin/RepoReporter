@@ -49,7 +49,7 @@ bool FileUtil::DirExist(const QString& path)
 
 bool FileUtil::DirMake(const QString& path)
 {
-	QString fullPath = GetFullPath(path);
+	QString fullPath = GetDirectoryFromPath(path);
 
 	QDir dir(fullPath);
 	if (dir.exists()) {
@@ -84,29 +84,35 @@ bool FileUtil::DeleteFileOrFolder(const QString& strPath)
 	return true;
 }
 
-QString FileUtil::GetFileName(const QString& path)
+QString FileUtil::GetFileNameFromPath(const QString& path)
 {
 	QFileInfo fileInfo(path);
 	return fileInfo.fileName();
 }
 
-QString FileUtil::GetFullPath(const QString& path)
+QString FileUtil::GetDirectoryFromPath(const QString& path)
 {
 	QFileInfo fileInfo(path);
 	return fileInfo.absolutePath();
 }
 
-QString FileUtil::GetExistingDirectory(QString defaultDir)
+QString FileUtil::GetFullAbsolutePath(const QString& path)
+{
+	QFileInfo fileInfo(path);
+	return fileInfo.absoluteFilePath();
+}
+
+QString FileUtil::SelectDirectory(QString defaultDir)
 {
 	return QFileDialog::getExistingDirectory(nullptr, "选择文件夹", defaultDir);
 }
 
-QString FileUtil::GetExistingFile(const QString& filter, QString defaultDir)
+QString FileUtil::SelectFile(const QString& filter, QString defaultDir)
 {
 	return QFileDialog::getOpenFileName(nullptr, "选择文件", defaultDir, filter);
 }
 
-void FileUtil::OpenFileBrowser(const QString& path)
+void FileUtil::OpenDirectoryInExplorer(const QString& path)
 {
 	QString directory = path;
 	int     iterations = 0;
