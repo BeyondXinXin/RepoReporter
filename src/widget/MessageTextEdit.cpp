@@ -1,5 +1,7 @@
 ﻿#include "MessageTextEdit.h"
 
+#include <QClipboard>
+#include <QApplication>
 
 MessageTextEdit::MessageTextEdit(QWidget* parent) : QTextEdit(parent)
 {
@@ -9,11 +11,11 @@ MessageTextEdit::MessageTextEdit(QWidget* parent) : QTextEdit(parent)
 
 void MessageTextEdit::contextMenuEvent(QContextMenuEvent* event)
 {
-	QMenu menu(this);
+	m_CopyAction->setEnabled(!textCursor().selectedText().isEmpty());
 
+	QMenu menu(this);
 	menu.addAction(m_CopyAction);
 	menu.addAction(m_CopyAllContentAction);
-	menu.addAction(m_EditCommentAction);
 	menu.exec(event->globalPos() - QPoint(20, 10));
 }
 
@@ -32,17 +34,21 @@ void MessageTextEdit::InitConnect()
 
 	fun(m_CopyAction,           "", u8"复制",     &MessageTextEdit::OnCopyAction);
 	fun(m_CopyAllContentAction, "", u8"复制所有内容", &MessageTextEdit::OnCopyAllContentAction);
-	fun(m_EditCommentAction,    "", u8"编辑注释",   &MessageTextEdit::OnEditCommentAction);
 }
 
 void MessageTextEdit::OnCopyAction()
 {
+	QString selectedText = textCursor().selectedText();
+	if (!selectedText.isEmpty()) {
+		QChar c = 0x2029;
+		selectedText.replace(c, '\n');
+		QClipboard* clipboard = QApplication::clipboard();
+		clipboard->setText(selectedText);
+	}
 }
 
 void MessageTextEdit::OnCopyAllContentAction()
 {
-}
-
-void MessageTextEdit::OnEditCommentAction()
-{
+	QClipboard* clipboard = QApplication::clipboard();
+	clipboard->setText(toPlainText());
 }

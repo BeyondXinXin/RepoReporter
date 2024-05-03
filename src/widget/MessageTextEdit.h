@@ -25,13 +25,11 @@ private slots:
 
 	void OnCopyAction();
 	void OnCopyAllContentAction();
-	void OnEditCommentAction();
 
 private:
 
 	QAction* m_CopyAction;
 	QAction* m_CopyAllContentAction;
-	QAction* m_EditCommentAction;
 };
 
 #endif // MESSAGETEXTEDIT_H
