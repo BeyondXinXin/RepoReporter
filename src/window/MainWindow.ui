@@ -110,13 +110,13 @@ QTableView::item:selected {
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>26</height>
+                <height>36</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>26</height>
+                <height>36</height>
                </size>
               </property>
               <property name="text">
@@ -135,45 +135,29 @@ QTableView::item:selected {
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>26</height>
+                <height>36</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>26</height>
+                <height>36</height>
                </size>
               </property>
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>80</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit">
+             <widget class="SearchLineEdit" name="searchEdit">
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>26</height>
+                <height>36</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>26</height>
+                <height>36</height>
                </size>
               </property>
              </widget>
@@ -249,6 +233,11 @@ QTableView::item:selected {
    <class>MessageTextEdit</class>
    <extends>QTextEdit</extends>
    <header>widget/MessageTextEdit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SearchLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widget/SearchLineEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

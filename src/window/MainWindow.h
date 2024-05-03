@@ -28,7 +28,9 @@ private:
 	void InitUI();
 	void InitConnect();
 
+	void ChangeSelectPro(const QString& path);
 	void UpdateStateLab(const int& index, const int& num);
+	void LogTableTextFilterChanged();
 
 private:
 

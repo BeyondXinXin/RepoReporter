@@ -17,8 +17,10 @@
 LogTableView::LogTableView(QWidget* parent)
 	: QTableView(parent)
 {
+	m_FilterProxyModel = new LogTableSortFilterProxyModel();
 	m_Model = new LogTableModel(this);
-	setModel(m_Model);
+	m_FilterProxyModel->setSourceModel(m_Model);
+	setModel(m_FilterProxyModel);
 
 	m_Delegate = new LogTableDelegate(this);
 	setItemDelegate(m_Delegate);
@@ -33,6 +35,12 @@ void LogTableView::ChangeProPath(const QString& path)
 	m_Model->UpdataLog(path);
 	emit SgnStateLabChange(-1, 0);
 	emit SgnStateLabChange(0, m_Model->rowCount());
+}
+
+void LogTableView::setFilterRegExp(const QRegExp& regExp, QList<int>filterItems)
+{
+	m_FilterProxyModel->SetFilterItems(filterItems);
+	m_FilterProxyModel->setFilterRegExp(regExp);
 }
 
 void LogTableView::contextMenuEvent(QContextMenuEvent* event)

@@ -6,6 +6,7 @@
 
 class LogTableModel;
 class LogTableDelegate;
+class LogTableSortFilterProxyModel;
 
 class LogTableView : public QTableView {
 	Q_OBJECT
@@ -15,6 +16,7 @@ public:
 	LogTableView(QWidget* parent = nullptr);
 
 	void ChangeProPath(const QString& path);
+	void setFilterRegExp(const QRegExp& regExp, QList<int>filterItems);
 
 Q_SIGNALS:
 
@@ -51,8 +53,10 @@ private:
 
 	LogTableModel* m_Model;
 	LogTableDelegate* m_Delegate;
+	LogTableSortFilterProxyModel* m_FilterProxyModel;
 
 	QString m_CurPaht;
 };
+
 
 #endif // LOGTABLEWIDGET_H

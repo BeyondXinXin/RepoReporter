@@ -79,10 +79,7 @@ void MainWindow::InitUI()
 void MainWindow::InitConnect()
 {
 	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
-	        ui->logTableView, &LogTableView::ChangeProPath);
-
-	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
-	        ui->fileTableView, &FileTableView::ChangeProPath);
+	        this, &MainWindow::ChangeSelectPro);
 
 	connect(ui->logTableView,    &LogTableView::SgnChangeSelectLog,
 	        ui->fileTableView, &FileTableView::ChangeLog);
@@ -92,11 +89,23 @@ void MainWindow::InitConnect()
 		ui->editMessage->setText(str);
 	});
 
-	connect(ui->logTableView, &LogTableView::SgnStateLabChange,
+	connect(ui->logTableView,  &LogTableView::SgnStateLabChange,
 	        this, &MainWindow::UpdateStateLab);
-	
+
 	connect(ui->fileTableView, &FileTableView::SgnStateLabChange,
-			this, &MainWindow::UpdateStateLab);
+	        this, &MainWindow::UpdateStateLab);
+
+	connect(ui->searchEdit,    &SearchLineEdit::SgnFilterChanged,
+	        this, &MainWindow::LogTableTextFilterChanged);
+	connect(ui->searchEdit,    &SearchLineEdit::textChanged,
+	        this, &MainWindow::LogTableTextFilterChanged);
+}
+
+void MainWindow::ChangeSelectPro(const QString& path)
+{
+	ui->searchEdit->clear();
+	ui->logTableView->ChangeProPath(path);
+	ui->fileTableView->ChangeProPath(path);
 }
 
 void MainWindow::UpdateStateLab(const int& index, const int& num)
@@ -128,4 +137,13 @@ void MainWindow::UpdateStateLab(const int& index, const int& num)
 
 	ui->labState->setText(QString(u8"正在显示%1个版本，已选择%2个版本，已选择%3个文件。")
 	                      .arg(num1).arg(num2).arg(num3));
+}
+
+void MainWindow::LogTableTextFilterChanged()
+{
+	QRegExp regExp;
+	regExp = QRegExp(ui->searchEdit->text(),
+	                 ui->searchEdit->GetCaseSensitivity(),
+	                 ui->searchEdit->GetPatternSyntax());
+	ui->logTableView->setFilterRegExp(regExp, ui->searchEdit->GetFilterList());
 }

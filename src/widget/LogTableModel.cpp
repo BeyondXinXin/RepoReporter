@@ -185,3 +185,47 @@ void LogTableModel::UpdateCurrentVersion()
 	}
 	emit SgnCurVerChange(id);
 }
+
+bool LogTableSortFilterProxyModel::filterAcceptsRow(
+	int sourceRow, const QModelIndex& sourceParent) const
+{
+	foreach(auto filterIten, m_FilterItems)
+	{
+		QModelIndex index = sourceModel()->index(sourceRow, filterIten, sourceParent);
+		if (sourceModel()->data(index).toString().contains(filterRegExp())) {
+			return true;
+		}
+	}
+	QModelIndex index0 = sourceModel()->index(sourceRow, 1, sourceParent);
+	QModelIndex index1 = sourceModel()->index(sourceRow, 2, sourceParent);
+	return sourceModel()->data(index0).toString().contains(filterRegExp()) ||
+	       sourceModel()->data(index1).toString().contains(filterRegExp());
+}
+
+bool LogTableSortFilterProxyModel::lessThan(
+	const QModelIndex& left, const QModelIndex& right) const
+{
+	QVariant leftData = sourceModel()->data(left);
+	QVariant rightData = sourceModel()->data(right);
+	if (leftData.type() == QVariant::DateTime) {
+		return leftData.toDateTime() < rightData.toDateTime();
+	} else if (leftData.canConvert<int>() && leftData.canConvert<int>()) {
+		return leftData.toInt() < rightData.toInt();
+	} else {
+		static QRegExp emailPattern("[\\w\\.]*@[\\w\\.]*)");
+		QString leftString = leftData.toString();
+		if ((left.column() == 1) && (emailPattern.indexIn(leftString) != -1)) {
+			leftString = emailPattern.cap(1);
+		}
+		QString rightString = rightData.toString();
+		if ((right.column() == 1) && (emailPattern.indexIn(rightString) != -1)) {
+			rightString = emailPattern.cap(1);
+		}
+		return QString::localeAwareCompare(leftString, rightString) < 0;
+	}
+}
+
+void LogTableSortFilterProxyModel::SetFilterItems(QList<int>filterItems)
+{
+	m_FilterItems = filterItems;
+}

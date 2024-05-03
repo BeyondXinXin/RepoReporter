@@ -2,6 +2,7 @@
 #define LOGMODEL_H
 
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
 
 #include "data/VCSDataStructures.h"
 
@@ -41,6 +42,19 @@ private:
 
 	QList<VCLogEntry>m_Logs;
 	QString m_CurVersion;
+};
+
+class LogTableSortFilterProxyModel : public QSortFilterProxyModel {
+public:
+
+	bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+	bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+
+	void SetFilterItems(QList<int>filterItems);
+
+private:
+
+	QList<int>m_FilterItems;
 };
 
 #endif // LOGMODEL_H
