@@ -54,7 +54,6 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 		entry.author = parts[2];
 		entry.date = QLocale::c().toDateTime(
 			parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
-
 		QStringList fileList = parts[4].split("\n");
 		foreach(QString file, fileList)
 		{
@@ -95,6 +94,7 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 	return logEntries;
 }
 
+#include <regex>
 QList<VCFileEntry>VersionControlManager::GetChangesForVersion(
 	const QString& repoPath, const QList<QString>& versions)
 {
@@ -115,7 +115,7 @@ QList<VCFileEntry>VersionControlManager::GetChangesForVersion(
 	process.start();
 
 	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"运行 git diff 命令时出错。";
+		qInfo() << u8"运行 git show 命令时出错。";
 		return fileEntries;
 	}
 
@@ -124,17 +124,28 @@ QList<VCFileEntry>VersionControlManager::GetChangesForVersion(
 	QStringList lines = outputStr.split("\n");
 	QMap<QString, VCFileEntry> fileMap;
 
-	foreach(const QString& line, lines)
+	foreach(QString line, lines)
 	{
 		if (line.isEmpty()) {
 			continue;
 		}
-		QStringList parts = line.split(QRegExp("\\s+"));
-
+		QStringList parts = line.remove(" ").split(QRegExp("\\s+"));
 		if (parts.size() < 3) {
 			continue;
 		}
 		QString filePath = parts[2];
+		int startIndex = filePath.indexOf('{');
+		if (startIndex != -1) {
+			int endIndex = filePath.indexOf('}', startIndex);
+			if (endIndex != -1) {
+				QString pattern = filePath.mid(startIndex, endIndex - startIndex + 1);
+				QStringList parts = pattern.mid(1, pattern.length() - 2).split("=>");
+				if (parts.size() == 2) {
+					filePath.replace(pattern, parts[1]);
+				}
+			}
+		}
+		if (filePath.contains("{")) {}
 		VCFileEntry& entry = fileMap[filePath];
 
 		entry.addNum += parts[0].toInt();
