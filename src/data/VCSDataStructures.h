@@ -18,6 +18,15 @@ static const QColor ModifyColor(0, 50, 177); // 深蓝色
 static const QColor DeleteColor(100, 0, 58); // 暗红色
 static const QColor RenameColor(0, 0, 255);  // 蓝色
 
+// --------------------- RepoType ---------------------
+enum class RepoType {
+	Unknown = 0,
+	Git = 1,
+	Svn = 2,
+	
+};
+Q_DECLARE_METATYPE(RepoType)
+
 // --------------------- FileOperation ---------------------
 
 enum class FileOperation {
@@ -119,6 +128,7 @@ inline QDebug operator<<(QDebug dbg, const VCLogEntry& entry)
 struct VCProjectPath {
 	QString name;
 	QString path;
+	RepoType type = RepoType::Unknown;
 
 	VCProjectPath(const QString& newName, const QString& newPath = "");
 	VCProjectPath(const VCProjectPath& other);

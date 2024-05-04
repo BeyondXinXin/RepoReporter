@@ -67,6 +67,13 @@ bool ProjectTreeModel::InsertData(const QModelIndex& index, VCProjectPath newDat
 	return true;
 }
 
+bool ProjectTreeModel::ChangeData(const QModelIndex& index, VCProjectPath newData)
+{
+	Node* oldNode = static_cast<Node *>(index.internalPointer());
+	oldNode->data = newData;
+	return true;
+}
+
 bool ProjectTreeModel::DeleteData(const QModelIndex& index)
 {
 	if (!index.isValid()) {
@@ -215,6 +222,15 @@ QString ProjectTreeModel::GetIndexPath(const QModelIndex& index) const
 
 
 	return node->data.path;
+}
+
+VCProjectPath ProjectTreeModel::GetIndexProjectPath(const QModelIndex& index) const
+{
+	if (!index.isValid()) {
+		return VCProjectPath("", "");
+	}
+	Node* node = static_cast<Node *>(index.internalPointer());
+	return node->data;
 }
 
 void ProjectTreeModel::ClearData()
@@ -402,6 +418,7 @@ void ProjectTreeModel::SaveNodeToJson(Node* node, QJsonArray& jsonArray) const
 
 	jsonObject["name"] = node->data.name;
 	jsonObject["path"] = node->data.path;
+	jsonObject["type"] = static_cast<int>(node->data.type);
 
 	QJsonArray childrenArray;
 
@@ -419,6 +436,7 @@ void ProjectTreeModel::LoadNodeFromJson(const QJsonArray& jsonArray, Node* paren
 	{
 		QJsonObject   obj = value.toObject();
 		VCProjectPath data(obj["name"].toString(), obj["path"].toString());
+		data.type = static_cast<RepoType>(obj["name"].toInt());
 
 		Node* newNode = new Node(data, parentNode);
 

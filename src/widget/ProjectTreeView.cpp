@@ -12,7 +12,7 @@
 #include <QPalette>
 
 #include "ProjectTreeModel.h"
-#include "window/AddProjectDialog.h"
+#include "window/ProjectDialog.h"
 #include "utils/ConfigManager.h"
 
 ProjectTreeView::ProjectTreeView(QWidget* parent)
@@ -20,6 +20,9 @@ ProjectTreeView::ProjectTreeView(QWidget* parent)
 {
 	m_AddAction = new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
 	connect(m_AddAction,    &QAction::triggered, this, &ProjectTreeView::AddProject);
+
+	m_EditAction = new QAction(QIcon(":/icons/add.png"), tr(u8"编辑项目"), this);
+	connect(m_EditAction,   &QAction::triggered, this, &ProjectTreeView::EditProject);
 
 	m_DeleteAction = new QAction(QIcon(":/icons/delete.png"), tr(u8"删除项目"), this);
 	connect(m_DeleteAction, &QAction::triggered, this, &ProjectTreeView::DeleteProject);
@@ -54,6 +57,7 @@ void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
 		menu.addAction(m_AddAction);
 	else {
 		menu.addAction(m_AddAction);
+		menu.addAction(m_EditAction);
 		menu.addAction(m_DeleteAction);
 	}
 	menu.exec(event->globalPos());
@@ -138,11 +142,10 @@ void ProjectTreeView::AddProject()
 		currentIndex = QModelIndex();
 	else {
 		QModelIndexList indexes = selectedIndexes();
-
 		currentIndex = indexes.first();
 	}
 
-	AddProjectDialog dialog;
+	ProjectDialog dialog(ProjectDialog::Add);
 	int result = dialog.exec();
 
 	if (result == QDialog::Accepted) {
@@ -157,6 +160,22 @@ void ProjectTreeView::AddProject()
 		if (currentIndex.isValid()) {
 			expand(currentIndex);
 		}
+	}
+}
+
+void ProjectTreeView::EditProject()
+{
+	QModelIndex   currentIndex = selectedIndexes().first();
+	VCProjectPath projectPath = m_Model->GetIndexProjectPath(currentIndex);
+
+	ProjectDialog dialog(ProjectDialog::Edit);
+	dialog.SetProjectData(projectPath);
+	int result = dialog.exec();
+
+	if (result == QDialog::Accepted) {
+		projectPath = dialog.GetProjectPathFromInput();
+		m_Model->ChangeData(currentIndex, projectPath);
+		emit SgnSelectPathChange(projectPath.path);
 	}
 }
 

@@ -28,7 +28,9 @@ protected:
 private slots:
 
 	void AddProject();
+	void EditProject();
 	void DeleteProject();
+
 	void SlotSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 	void SlotItemMoved(const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex);
 
@@ -37,6 +39,7 @@ private:
 private:
 
 	QAction* m_AddAction;
+	QAction* m_EditAction;
 	QAction* m_DeleteAction;
 
 	ProjectTreeModel* m_Model;

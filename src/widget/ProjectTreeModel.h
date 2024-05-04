@@ -18,6 +18,7 @@ public:
 	~ProjectTreeModel() override;
 
 	bool InsertData(const QModelIndex& index, VCProjectPath newData);
+	bool ChangeData(const QModelIndex& index, VCProjectPath newData);
 	bool DeleteData(const QModelIndex& index);
 
 	QVariant data(const QModelIndex& index, int role) const override;
@@ -28,6 +29,7 @@ public:
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	QString GetIndexPath(const QModelIndex& index)const;
+	VCProjectPath GetIndexProjectPath(const QModelIndex& index)const;
 
 	void ClearData();
 
