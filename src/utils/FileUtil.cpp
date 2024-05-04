@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QDesktopServices>
+#include <QIcon>
+#include <QFileIconProvider>
 
 bool FileUtil::FileCopy(const QString& src, const QString& dst, const bool cover)
 {
@@ -130,4 +132,11 @@ void FileUtil::OpenDirectoryInExplorer(const QString& path)
 		}
 	}
 	QDesktopServices::openUrl(QUrl::fromLocalFile(directory));
+}
+
+QIcon FileUtil::getFileIcon(const QString& filePath)
+{
+	QFileIconProvider iconProvider;
+	QFileInfo fileInfo(filePath);
+	return iconProvider.icon(fileInfo);
 }

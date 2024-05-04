@@ -37,6 +37,8 @@ public:
 		QString defaultDir = QCoreApplication::applicationDirPath());
 
 	static void OpenDirectoryInExplorer(const QString& path);
+
+	static QIcon getFileIcon(const QString& filePath);
 };
 
 #endif // FILEUTIL_H

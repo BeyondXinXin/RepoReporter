@@ -21,9 +21,8 @@ static const QColor RenameColor(0, 0, 255);  // 蓝色
 // --------------------- RepoType ---------------------
 enum class RepoType {
 	Unknown = 0,
-	Git = 1,
-	Svn = 2,
-	
+	Git     = 1,
+	Svn     = 2,
 };
 Q_DECLARE_METATYPE(RepoType)
 
@@ -140,12 +139,17 @@ inline VCProjectPath::VCProjectPath(const QString& newName, const QString& newPa
 {}
 
 inline VCProjectPath::VCProjectPath(const VCProjectPath& other)
-	: name(other.name), path(other.path)
+	: name(other.name), path(other.path), type(other.type)
 {}
 
 inline QDebug operator<<(QDebug dbg, const VCProjectPath& path)
 {
-	dbg.nospace() << "VCProjectPath(name:" << path.name << ", path:" << path.path << ")";
+	dbg.nospace()
+	        << "VCProjectPath("
+	        << "name:" << path.name
+	        << ", path:" << path.path
+	        << ", type:" << static_cast<int>(path.type)
+	        << ")";
 	return dbg.space();
 }
 

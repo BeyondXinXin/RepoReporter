@@ -117,15 +117,19 @@ QVariant ProjectTreeModel::data(const QModelIndex& index, int role) const
 	if (index.column() == 0) {
 		if ((role == Qt::EditRole) || (role == Qt::DisplayRole)) {
 			Node* node = static_cast<Node *>(index.internalPointer());
-
 			return node->data.name;
 		} else if (role == Qt::DecorationRole) {
 			Node* node = static_cast<Node *>(index.internalPointer());
-
-			if (node->data.path.isEmpty()) {
-				return QVariant::fromValue(QApplication::style()->standardIcon(QStyle::SP_DirIcon));
+			QIcon icon = QIcon(":/image/folder.png");
+			if (!node->data.path.isEmpty()) {
+				if (RepoType::Git == node->data.type) {
+					icon = QIcon(":/image/file-git.png");
+				}
+				if (RepoType::Svn == node->data.type) {
+					icon = QIcon(":/image/file-svn.png");
+				}
 			}
-			return QVariant::fromValue(QApplication::style()->standardIcon(QStyle::SP_FileIcon));
+			return QVariant::fromValue(icon);
 		} else if (role == Qt::TextAlignmentRole) {
 			if (index.column() == 1) {
 				return QVariant(Qt::AlignTrailing | Qt::AlignVCenter);
@@ -436,7 +440,7 @@ void ProjectTreeModel::LoadNodeFromJson(const QJsonArray& jsonArray, Node* paren
 	{
 		QJsonObject   obj = value.toObject();
 		VCProjectPath data(obj["name"].toString(), obj["path"].toString());
-		data.type = static_cast<RepoType>(obj["name"].toInt());
+		data.type = static_cast<RepoType>(obj["type"].toInt());
 
 		Node* newNode = new Node(data, parentNode);
 

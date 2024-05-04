@@ -2,5 +2,9 @@
     <qresource prefix="/">
         <file>image/logo.png</file>
         <file>image/search.png</file>
+        <file>image/file.png</file>
+        <file>image/file-git.png</file>
+        <file>image/file-svn.png</file>
+        <file>image/folder.png</file>
     </qresource>
 </RCC>

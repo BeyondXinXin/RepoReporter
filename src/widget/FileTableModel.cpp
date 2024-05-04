@@ -1,8 +1,10 @@
 ﻿#include "FileTableModel.h"
 
 #include <QDebug>
+#include <QFileInfo>
 
 #include "utils/VersionControlManager.h"
+#include "utils/FileUtil.h"
 
 FileTableModel::FileTableModel(QObject* parent)
 	: QAbstractItemModel(parent)
@@ -91,6 +93,11 @@ QVariant FileTableModel::data(const QModelIndex& index, int role) const
 
 		default:
 			return QVariant();
+		}
+	} else if (role == Qt::DecorationRole) {
+		if (0 == index.column()) {
+			const VCFileEntry& file = m_Files.at(index.row());
+			return QVariant::fromValue(FileUtil::getFileIcon(file.filePath));
 		}
 	}
 

@@ -149,14 +149,14 @@ void ProjectTreeView::AddProject()
 	int result = dialog.exec();
 
 	if (result == QDialog::Accepted) {
-		VCProjectPath projectPath = dialog.GetProjectPathFromInput();
-
 		if (dialog.ProjectPathFromInputIsEmpty()) {
 			currentIndex = QModelIndex();
 		}
 
-		m_Model->InsertData(currentIndex, projectPath);
+		VCProjectPath projectPath = dialog.GetProjectPathFromInput();
+		qInfo() << projectPath;
 
+		m_Model->InsertData(currentIndex, projectPath);
 		if (currentIndex.isValid()) {
 			expand(currentIndex);
 		}
