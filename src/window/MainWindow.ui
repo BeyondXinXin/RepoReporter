@@ -15,7 +15,6 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QTableView {
-    selection-color: #000000;
 }
 
 QTableView::item {
@@ -24,7 +23,6 @@ QTableView::item {
 
 QTableView::item:selected {
     background-color: rgba(0, 102, 204, 100);
-    color: #000000;
 }
 
 </string>

@@ -8,7 +8,6 @@
 #include <QClipboard>
 
 #include "LogTableModel.h"
-#include "LogTableDelegate.h"
 #include "utils/VersionControlManager.h"
 #include "utils/ConfigManager.h"
 #include "utils/FileUtil.h"

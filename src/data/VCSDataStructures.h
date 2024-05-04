@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QString>
 #include <QDateTime>
+#include <QColor>
 
 /*
  * FileOperation
@@ -12,6 +13,10 @@
  * VCProjectPath
  */
 
+static const QColor AddColor(128, 0, 128);   // 紫色
+static const QColor ModifyColor(0, 50, 177); // 深蓝色
+static const QColor DeleteColor(100, 0, 58); // 暗红色
+static const QColor RenameColor(0, 0, 255);  // 蓝色
 
 // --------------------- FileOperation ---------------------
 
@@ -35,6 +40,21 @@ inline QString FileOperationToString(FileOperation operation)
 	case FileOperation::Rename: return QStringLiteral("R");
 
 	default: return QStringLiteral("Err");
+	}
+}
+
+inline FileOperation StringToFileOperation(QString str)
+{
+	if (str == "M") {
+		return FileOperation::Modify;
+	} else if (str == "A") {
+		return FileOperation::Add;
+	} else if (str == "D") {
+		return FileOperation::Delete;
+	} else if (str == "R") {
+		return FileOperation::Rename;
+	} else {
+		return FileOperation::Modify;
 	}
 }
 

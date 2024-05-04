@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
+#include <QStyledItemDelegate>
 
 #include "data/VCSDataStructures.h"
 
@@ -55,6 +56,23 @@ public:
 private:
 
 	QList<int>m_FilterItems;
+};
+
+class LogTableDelegate : public QStyledItemDelegate {
+public:
+
+	LogTableDelegate(QObject* parent = nullptr);
+
+	void paint(
+		QPainter* painter,
+		const QStyleOptionViewItem& option,
+		const QModelIndex& index) const override;
+
+	void SetCurrentVersionRow(int row);
+
+private:
+
+	int m_CurVerRow = -1;
 };
 
 #endif // LOGMODEL_H

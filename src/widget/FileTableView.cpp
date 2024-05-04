@@ -19,6 +19,8 @@ FileTableView::FileTableView(QWidget* parent)
 {
 	m_Model = new FileTableModel(this);
 	setModel(m_Model);
+	m_Delegate = new FileTableDelegate(this);
+	setItemDelegate(m_Delegate);
 
 	InitUI();
 	InitConnect();

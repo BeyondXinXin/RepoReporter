@@ -5,6 +5,7 @@
 #include <QTableView>
 
 class FileTableModel;
+class FileTableDelegate;
 
 class FileTableView : public QTableView {
 	Q_OBJECT
@@ -64,6 +65,7 @@ private:
 	QAction* m_CopyFileNameAction;
 
 	FileTableModel* m_Model;
+	FileTableDelegate* m_Delegate;
 	QString m_CurPaht;
 
 	QList<QString>m_CurVersions;

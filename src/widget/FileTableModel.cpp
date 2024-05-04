@@ -123,3 +123,49 @@ QVariant FileTableModel::headerData(int section, Qt::Orientation orientation, in
 
 	return QVariant();
 }
+
+FileTableDelegate::FileTableDelegate(QObject* parent) : QStyledItemDelegate(parent)
+{}
+
+void FileTableDelegate::paint(
+	QPainter* painter,
+	const QStyleOptionViewItem& option,
+	const QModelIndex& index) const
+{
+	QColor textColor = Qt::black;
+
+	auto model = index.model();
+	if (model) {
+		QModelIndex   siblingIndex = index.siblingAtColumn(2);
+		FileOperation operation =
+			StringToFileOperation(model->data(siblingIndex).toString());
+
+		switch (operation) {
+		case FileOperation::Add: {
+			textColor = AddColor;
+			break;
+		};
+
+		case FileOperation::Modify: {
+			textColor = ModifyColor;
+			break;
+		};
+
+		case FileOperation::Delete: {
+			textColor = DeleteColor;
+			break;
+		};
+
+		case FileOperation::Rename: {
+			textColor = RenameColor;
+			break;
+		};
+		}
+	}
+
+
+	QStyleOptionViewItem newOption(option);
+	newOption.palette.setColor(QPalette::Text,            textColor);
+	newOption.palette.setColor(QPalette::HighlightedText, textColor);
+	QStyledItemDelegate::paint(painter, newOption, index);
+}

@@ -229,3 +229,29 @@ void LogTableSortFilterProxyModel::SetFilterItems(QList<int>filterItems)
 {
 	m_FilterItems = filterItems;
 }
+
+LogTableDelegate::LogTableDelegate(QObject* parent) : QStyledItemDelegate(parent)
+{}
+
+void LogTableDelegate::paint(
+	QPainter* painter,
+	const QStyleOptionViewItem& option,
+	const QModelIndex& index) const
+{
+	QStyleOptionViewItem newOption(option);
+	if (index.row() == m_CurVerRow) {
+		newOption.font.setBold(true);
+		newOption.palette.setColor(QPalette::Text,            Qt::blue);
+		newOption.palette.setColor(QPalette::HighlightedText, Qt::blue);
+	} else {
+		newOption.palette.setColor(QPalette::Text,            Qt::black);
+		newOption.palette.setColor(QPalette::HighlightedText, Qt::black);
+	}
+
+	QStyledItemDelegate::paint(painter, newOption, index);
+}
+
+void LogTableDelegate::SetCurrentVersionRow(int row)
+{
+	m_CurVerRow = row;
+}

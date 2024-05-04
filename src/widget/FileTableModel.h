@@ -3,6 +3,7 @@
 
 #include <QAbstractItemModel>
 #include <QMap>
+#include <QStyledItemDelegate>
 
 #include "data/VCSDataStructures.h"
 
@@ -28,6 +29,17 @@ public:
 private:
 
 	QList<VCFileEntry>m_Files;
+};
+
+class FileTableDelegate : public QStyledItemDelegate {
+public:
+
+	FileTableDelegate(QObject* parent = nullptr);
+
+	void paint(
+		QPainter* painter,
+		const QStyleOptionViewItem& option,
+		const QModelIndex& index) const override;
 };
 
 #endif // LOGMODEL_H
