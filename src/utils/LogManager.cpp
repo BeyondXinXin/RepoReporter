@@ -8,10 +8,11 @@
 #include <QDir>
 #include <QDebug>
 
+#include "CommandLineManager.h"
+
 QString LogManager::m_LogFilePath = "";
 
 LogManager::LogManager(QObject* parent) : QObject(parent)
-
 {
 	this->Initial();
 }
@@ -51,9 +52,9 @@ void LogManager::LogMessageOutput(QtMsgType type,
 
 	switch (type) {
 	case QtDebugMsg: {
-		text = QString("DEBUG:");
-		cout << msg << Qt::endl;
-
+		if (CommandLineManager::option.debug) {
+			cout << msg << Qt::endl;
+		}
 		return;
 	}
 
@@ -89,6 +90,7 @@ void LogManager::LogMessageOutput(QtMsgType type,
 
 	cout << message << Qt::endl;
 	cout.flush();
+
 
 	// 写日志
 	static QString logFileName
