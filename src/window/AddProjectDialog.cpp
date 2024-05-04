@@ -9,6 +9,8 @@ AddProjectDialog::AddProjectDialog(QWidget* parent) :
 
 	connect(m_UI->btnAccept, &QPushButton::clicked, this, &AddProjectDialog::SlotAcceptButtonClicked);
 	connect(m_UI->btnReject, &QPushButton::clicked, this, &AddProjectDialog::SlotRejectButtonClicked);
+
+	setWindowTitle(u8"添加项目");
 }
 
 AddProjectDialog::~AddProjectDialog()

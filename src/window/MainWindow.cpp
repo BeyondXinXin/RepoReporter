@@ -8,7 +8,7 @@
 
 #include "utils/ConfigManager.h"
 #include "utils/SystemTrayManager.h"
-
+#include "utils/VersionControlManager.h"
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -74,6 +74,9 @@ void MainWindow::InitUI()
 		lastPosition = screenRect.center() - rect().center();
 	}
 	move(lastPosition);
+
+	setWindowTitle(u8"RepoReporter");
+	setWindowIcon(QIcon(":/image/logo.png"));
 }
 
 void MainWindow::InitConnect()
@@ -106,6 +109,9 @@ void MainWindow::ChangeSelectPro(const QString& path)
 	ui->searchEdit->clear();
 	ui->logTableView->ChangeProPath(path);
 	ui->fileTableView->ChangeProPath(path);
+
+	QString branchName = VersionControlManager::GetCurrentBranch(path);
+	ui->branchBtn->setText(branchName);
 }
 
 void MainWindow::UpdateStateLab(const int& index, const int& num)

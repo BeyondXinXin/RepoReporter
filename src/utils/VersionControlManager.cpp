@@ -20,7 +20,7 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 	process.setProgram("git");
 	QStringList args;
 
-	args << "log" << "--all"
+	args << "log" /*<< "--all"*/
 	     << "--name-status"
 	     << "--pretty=format:%h|%B|%an|%ad|"
 	     << "--date=format-local:%c";
@@ -134,7 +134,7 @@ QList<VCFileEntry>VersionControlManager::GetChangesForVersion(
 			continue;
 		}
 		QString filePath = parts[2];
-		int startIndex = filePath.indexOf('{');
+		int     startIndex = filePath.indexOf('{');
 		if (startIndex != -1) {
 			int endIndex = filePath.indexOf('}', startIndex);
 			if (endIndex != -1) {
@@ -294,4 +294,56 @@ void VersionControlManager::ExportFile(
 		process.start();
 		process.waitForFinished(3000);
 	}
+}
+
+QString VersionControlManager::GetCurrentBranch(const QString& repoPath)
+{
+	QProcess process;
+	process.setProgram("git");
+	QStringList args;
+	args << "rev-parse" << "--abbrev-ref" << "HEAD";
+	process.setArguments(args);
+	process.setWorkingDirectory(repoPath);
+	process.start();
+
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << u8"获取当前分支名称时出错。";
+		return "";
+	}
+
+	QString branch = process.readAllStandardOutput().trimmed();
+	return branch;
+}
+
+QStringList VersionControlManager::GetAllBranches(const QString& repoPath)
+{
+	QProcess process;
+	process.setProgram("git");
+	QStringList args;
+	args << "branch" << "-a";
+	process.setArguments(args);
+	process.setWorkingDirectory(repoPath);
+	process.start();
+
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << u8"获取所有分支时出错。";
+		return QStringList();
+	}
+
+	QString output = process.readAllStandardOutput();
+	QStringList branches = output.split(QRegExp("[\\r\\n]+"), QString::SkipEmptyParts);
+
+	for (int i = 0; i < branches.size(); ++i) {
+		QString branch = branches.at(i).trimmed();
+
+		if (branch.startsWith('*')) {
+			branches[i] = branch.mid(2);
+		}
+
+		if (branch.startsWith("remotes/")) {
+			branches[i] = branch.mid(8);
+		}
+	}
+
+	return branches;
 }

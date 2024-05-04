@@ -34,6 +34,10 @@ public:
 	static void ExportFile(
 		const QString& repoPath, const QStringList& files,
 		const QString& revision, const QString& targetPath);
+
+	static QString GetCurrentBranch(const QString& repoPath);
+
+	static QStringList GetAllBranches(const QString& repoPath);
 };
 
 #endif // VERSIONCONTROLMANAGER_H
