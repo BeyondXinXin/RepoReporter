@@ -25,8 +25,13 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
 	qInfo() << u8"软件关闭。";
-	ConfigManager::GetInstance().WriteValue("LastWindowSize", size());
-	ConfigManager::GetInstance().WriteValue("LastWindowPosition", pos());
+	
+	if (isMaximized()) {
+		ConfigManager::GetInstance().WriteValue("LastNormalWindowGeometry", normalGeometry());
+	} else {
+		ConfigManager::GetInstance().WriteValue("LastNormalWindowGeometry", geometry());
+	}
+
 	delete ui;
 }
 
@@ -55,25 +60,18 @@ void MainWindow::hideEvent(QHideEvent* event)
 
 void MainWindow::InitUI()
 {
-	QSize lastSize = ConfigManager::GetInstance()
-	                 .ReadValue("LastWindowSize").toSize();
-	if (!lastSize.isValid()) {
+	QRect normalGeometry =
+		ConfigManager::GetInstance().ReadValue("LastNormalWindowGeometry").toRect();
+	if ((normalGeometry.width() > 400) && (normalGeometry.height() > 400)) {
+		setGeometry(normalGeometry);
+	} else {
 		QScreen* screen = QGuiApplication::screenAt(QCursor::pos());
 		QRect    screenRect = screen->geometry();
 		QSize    screenSize = screenRect.size();
 		QSize    windowSize = screenSize / 2;
-		lastSize = windowSize;
+		resize(windowSize);
+		move(screenRect.center() - rect().center());
 	}
-	resize(lastSize);
-
-	QPoint lastPosition = ConfigManager::GetInstance()
-	                      .ReadValue("LastWindowPosition").toPoint();
-	if (lastPosition.isNull()) {
-		QScreen* screen = QGuiApplication::screenAt(QCursor::pos());
-		QRect    screenRect = screen->geometry();
-		lastPosition = screenRect.center() - rect().center();
-	}
-	move(lastPosition);
 
 	setWindowTitle(u8"RepoReporter");
 	setWindowIcon(QIcon(":/image/logo.png"));
