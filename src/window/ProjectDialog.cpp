@@ -33,7 +33,7 @@ ProjectDialog::~ProjectDialog()
 	delete m_UI;
 }
 
-void ProjectDialog::SetProjectData(const VCProjectPath& data)
+void ProjectDialog::SetProjectData(const VCRepoEntry & data)
 {
 	m_UI->editName->setText(data.name);
 	m_UI->editPath->setText(data.path);
@@ -51,9 +51,9 @@ void ProjectDialog::SetProjectData(const VCProjectPath& data)
 	}
 }
 
-VCProjectPath ProjectDialog::GetProjectPathFromInput() const
+VCRepoEntry  ProjectDialog::GetProjectPathFromInput() const
 {
-	VCProjectPath data(m_UI->editName->text(), m_UI->editPath->text());
+	VCRepoEntry  data(m_UI->editName->text(), m_UI->editPath->text());
 	if (m_UI->GitRBtn->isChecked()) {
 		data.type = RepoType::Git;
 	} else if (m_UI->SvnRBtn->isChecked()) {

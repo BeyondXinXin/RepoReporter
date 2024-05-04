@@ -5,6 +5,7 @@
 #include <QModelIndex>
 
 
+class ProjectTreeDelegate;
 class ProjectTreeModel;
 
 class ProjectTreeView : public QTreeView {
@@ -36,6 +37,8 @@ private slots:
 
 private:
 
+	void CheckRepoState();
+
 private:
 
 	QAction* m_AddAction;
@@ -43,6 +46,7 @@ private:
 	QAction* m_DeleteAction;
 
 	ProjectTreeModel* m_Model;
+	ProjectTreeDelegate* m_Delegate;
 
 	QModelIndex m_LastSelectItem;
 };

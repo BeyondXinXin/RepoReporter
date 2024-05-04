@@ -38,6 +38,8 @@ public:
 	static QString GetCurrentBranch(const QString& repoPath);
 
 	static QStringList GetAllBranches(const QString& repoPath);
+
+	static bool CheckUncommittedChanges(const QString& repoPath);
 };
 
 #endif // VERSIONCONTROLMANAGER_H

@@ -18,6 +18,15 @@ static const QColor ModifyColor(0, 50, 177); // 深蓝色
 static const QColor DeleteColor(100, 0, 58); // 暗红色
 static const QColor RenameColor(0, 0, 255);  // 蓝色
 
+static const QColor RepoUnsubmittedColor(150, 0, 85);
+
+// --------------------- RepoState ---------------------
+enum class RepoState {
+	Normal      = 0,
+	Unsubmitted = 1,
+};
+Q_DECLARE_METATYPE(RepoState)
+
 // --------------------- RepoType ---------------------
 enum class RepoType {
 	Unknown = 0,
@@ -124,31 +133,33 @@ inline QDebug operator<<(QDebug dbg, const VCLogEntry& entry)
 
 // --------------------- VCProjectPath ---------------------
 
-struct VCProjectPath {
+struct VCRepoEntry {
 	QString name;
 	QString path;
 	RepoType type = RepoType::Unknown;
+	RepoState state = RepoState::Normal;
 
-	VCProjectPath(const QString& newName, const QString& newPath = "");
-	VCProjectPath(const VCProjectPath& other);
-	friend QDebug operator<<(QDebug dbg, const VCProjectPath& path);
+	VCRepoEntry(const QString& newName, const QString& newPath = "");
+	VCRepoEntry(const VCRepoEntry& other);
+	friend QDebug operator<<(QDebug dbg, const VCRepoEntry& path);
 };
 
-inline VCProjectPath::VCProjectPath(const QString& newName, const QString& newPath)
+inline VCRepoEntry::VCRepoEntry(const QString& newName, const QString& newPath)
 	: name(newName), path(newPath)
 {}
 
-inline VCProjectPath::VCProjectPath(const VCProjectPath& other)
-	: name(other.name), path(other.path), type(other.type)
+inline VCRepoEntry::VCRepoEntry(const VCRepoEntry& other)
+	: name(other.name), path(other.path), type(other.type), state(other.state)
 {}
 
-inline QDebug operator<<(QDebug dbg, const VCProjectPath& path)
+inline QDebug operator<<(QDebug dbg, const VCRepoEntry& path)
 {
 	dbg.nospace()
 	        << "VCProjectPath("
 	        << "name:" << path.name
 	        << ", path:" << path.path
 	        << ", type:" << static_cast<int>(path.type)
+	        << ", state:" << static_cast<int>(path.state)
 	        << ")";
 	return dbg.space();
 }

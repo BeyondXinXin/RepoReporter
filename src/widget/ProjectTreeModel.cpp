@@ -10,10 +10,14 @@
 #include <QJsonDocument>
 #include <QStandardPaths>
 #include <QDir>
+#include <QFuture>
+#include <QtConcurrent>
+
+#include "utils/VersionControlManager.h"
 
 ProjectTreeModel::ProjectTreeModel(QObject* parent)
 	: QAbstractItemModel(parent),
-	m_RootNode(new Node(VCProjectPath("Root")))
+	m_RootNode(new Node(VCRepoEntry("Root")))
 {
 	QString configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 
@@ -38,7 +42,7 @@ ProjectTreeModel::~ProjectTreeModel()
 	delete m_RootNode;
 }
 
-bool ProjectTreeModel::InsertData(const QModelIndex& index, VCProjectPath newData)
+bool ProjectTreeModel::InsertData(const QModelIndex& index, VCRepoEntry newData)
 {
 	QModelIndex parentIndex;
 	Node* parentNode;
@@ -67,7 +71,7 @@ bool ProjectTreeModel::InsertData(const QModelIndex& index, VCProjectPath newDat
 	return true;
 }
 
-bool ProjectTreeModel::ChangeData(const QModelIndex& index, VCProjectPath newData)
+bool ProjectTreeModel::ChangeData(const QModelIndex& index, VCRepoEntry newData)
 {
 	Node* oldNode = static_cast<Node *>(index.internalPointer());
 	oldNode->data = newData;
@@ -120,20 +124,16 @@ QVariant ProjectTreeModel::data(const QModelIndex& index, int role) const
 			return node->data.name;
 		} else if (role == Qt::DecorationRole) {
 			Node* node = static_cast<Node *>(index.internalPointer());
-			QIcon icon = QIcon(":/image/folder.png");
-			if (!node->data.path.isEmpty()) {
-				if (RepoType::Git == node->data.type) {
-					icon = QIcon(":/image/file-git.png");
-				}
-				if (RepoType::Svn == node->data.type) {
-					icon = QIcon(":/image/file-svn.png");
-				}
-			}
+			VCRepoEntry data = node->data;
+			QIcon icon = GetRepoEntryFileIcon(data);
 			return QVariant::fromValue(icon);
 		} else if (role == Qt::TextAlignmentRole) {
 			if (index.column() == 1) {
 				return QVariant(Qt::AlignTrailing | Qt::AlignVCenter);
 			}
+		} else if (role == Qt::UserRole + 1) {
+			Node* node = static_cast<Node *>(index.internalPointer());
+			return static_cast<int>(node->data.state);
 		}
 	}
 
@@ -228,10 +228,10 @@ QString ProjectTreeModel::GetIndexPath(const QModelIndex& index) const
 	return node->data.path;
 }
 
-VCProjectPath ProjectTreeModel::GetIndexProjectPath(const QModelIndex& index) const
+VCRepoEntry ProjectTreeModel::GetIndexProjectPath(const QModelIndex& index) const
 {
 	if (!index.isValid()) {
-		return VCProjectPath("", "");
+		return VCRepoEntry("", "");
 	}
 	Node* node = static_cast<Node *>(index.internalPointer());
 	return node->data;
@@ -242,6 +242,13 @@ void ProjectTreeModel::ClearData()
 	beginResetModel();
 	qDeleteAll(m_RootNode->children);
 	endResetModel();
+}
+
+void ProjectTreeModel::CheckAllRepoState()
+{
+	QtConcurrent::run([this]() {
+		CheckRepoState(m_RootNode);
+	});
 }
 
 bool ProjectTreeModel::SaveToJson(const QString& filePath) const
@@ -438,8 +445,8 @@ void ProjectTreeModel::LoadNodeFromJson(const QJsonArray& jsonArray, Node* paren
 {
 	foreach(const QJsonValue& value, jsonArray)
 	{
-		QJsonObject   obj = value.toObject();
-		VCProjectPath data(obj["name"].toString(), obj["path"].toString());
+		QJsonObject obj = value.toObject();
+		VCRepoEntry data(obj["name"].toString(), obj["path"].toString());
 		data.type = static_cast<RepoType>(obj["type"].toInt());
 
 		Node* newNode = new Node(data, parentNode);
@@ -452,7 +459,40 @@ void ProjectTreeModel::LoadNodeFromJson(const QJsonArray& jsonArray, Node* paren
 	}
 }
 
-ProjectTreeModel::Node::Node(const VCProjectPath& inData, Node* parent)
+void ProjectTreeModel::CheckRepoState(Node* node)
+{
+	for (Node* child : node->children) {
+		if (VersionControlManager::CheckUncommittedChanges(child->data.path)) {
+			child->data.state = RepoState::Unsubmitted;
+		}
+		CheckRepoState(child);
+	}
+}
+
+QIcon ProjectTreeModel::GetRepoEntryFileIcon(VCRepoEntry data) const
+{
+	if (data.path.isEmpty()) {
+		return QIcon(":/image/folder.png");
+	}
+	if (RepoType::Git == data.type) {
+		if (RepoState::Normal == data.state) {
+			return QIcon(":/image/file-git.png");
+		} else if (RepoState::Unsubmitted == data.state) {
+			return QIcon(":/image/file-git-unsubmitted.png");
+		}
+	}
+	if (RepoType::Svn == data.type) {
+		if (RepoState::Normal == data.state) {
+			return QIcon(":/image/file-svn.png");
+		} else if (RepoState::Unsubmitted == data.state) {
+			return QIcon(":/image/file-svn-unsubmitted.png");
+		}
+	}
+
+	return QIcon(":/image/folder.png");
+}
+
+ProjectTreeModel::Node::Node(const VCRepoEntry& inData, Node* parent)
 	: data(inData),
 	parent(parent)
 {
@@ -464,4 +504,28 @@ ProjectTreeModel::Node::Node(const VCProjectPath& inData, Node* parent)
 ProjectTreeModel::Node::~Node()
 {
 	qDeleteAll(children);
+}
+
+ProjectTreeDelegate::ProjectTreeDelegate(QObject* parent) : QStyledItemDelegate(parent)
+{}
+
+void ProjectTreeDelegate::paint(
+	QPainter* painter,
+	const QStyleOptionViewItem& option,
+	const QModelIndex& index) const
+{
+	QStyleOptionViewItem newOption(option);
+
+	auto model = index.model();
+	if (model) {
+		RepoState state = static_cast<RepoState>(
+			model->data(index, Qt::UserRole + 1).toInt());
+		if (RepoState::Unsubmitted == state) {
+			newOption.palette.setColor(QPalette::Text,            RepoUnsubmittedColor);
+			newOption.palette.setColor(QPalette::HighlightedText, RepoUnsubmittedColor);
+		}
+	}
+
+
+	QStyledItemDelegate::paint(painter, newOption, index);
 }

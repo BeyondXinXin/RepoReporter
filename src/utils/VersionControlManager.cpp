@@ -347,3 +347,22 @@ QStringList VersionControlManager::GetAllBranches(const QString& repoPath)
 
 	return branches;
 }
+
+bool VersionControlManager::CheckUncommittedChanges(const QString& repoPath)
+{
+	if (repoPath.isEmpty()) {
+		return false;
+	}
+
+	QProcess process;
+	process.setProgram("git");
+	QStringList args;
+	args << "diff" << "--quiet";
+	process.setArguments(args);
+	process.setWorkingDirectory(repoPath);
+	process.start();
+	process.waitForFinished();
+	bool res = process.exitCode() != 0;
+
+	return res;
+}

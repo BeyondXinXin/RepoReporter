@@ -22,9 +22,9 @@ public:
 	explicit ProjectDialog(const Type& type, QWidget* parent = nullptr);
 	~ProjectDialog();
 
-	void SetProjectData(const VCProjectPath& data);
+	void SetProjectData(const VCRepoEntry & data);
 
-	VCProjectPath GetProjectPathFromInput()const;
+	VCRepoEntry  GetProjectPathFromInput()const;
 	bool ProjectPathFromInputIsEmpty()const;
 
 private slots:

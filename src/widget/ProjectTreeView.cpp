@@ -30,6 +30,9 @@ ProjectTreeView::ProjectTreeView(QWidget* parent)
 	m_Model = new ProjectTreeModel(this);
 	setModel(m_Model);
 
+	m_Delegate = new ProjectTreeDelegate(this);
+	setItemDelegate(m_Delegate);
+
 	setIndentation(20);
 
 	header()->setVisible(false);
@@ -101,6 +104,7 @@ void ProjectTreeView::showEvent(QShowEvent* event)
 		setCurrentIndex(m_LastSelectItem);
 	}
 
+	CheckRepoState();
 	QTreeView::showEvent(event);
 }
 
@@ -153,7 +157,7 @@ void ProjectTreeView::AddProject()
 			currentIndex = QModelIndex();
 		}
 
-		VCProjectPath projectPath = dialog.GetProjectPathFromInput();
+		VCRepoEntry projectPath = dialog.GetProjectPathFromInput();
 		qInfo() << projectPath;
 
 		m_Model->InsertData(currentIndex, projectPath);
@@ -165,8 +169,8 @@ void ProjectTreeView::AddProject()
 
 void ProjectTreeView::EditProject()
 {
-	QModelIndex   currentIndex = selectedIndexes().first();
-	VCProjectPath projectPath = m_Model->GetIndexProjectPath(currentIndex);
+	QModelIndex currentIndex = selectedIndexes().first();
+	VCRepoEntry projectPath = m_Model->GetIndexProjectPath(currentIndex);
 
 	ProjectDialog dialog(ProjectDialog::Edit);
 	dialog.SetProjectData(projectPath);
@@ -207,4 +211,9 @@ void ProjectTreeView::SlotItemMoved(
 {
 	expand(oldParentIndex);
 	expand(newParentIndex);
+}
+
+void ProjectTreeView::CheckRepoState()
+{
+	m_Model->CheckAllRepoState();
 }

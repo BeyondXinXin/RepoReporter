@@ -12,5 +12,7 @@
         <file>image/icon/empty.ico</file>
         <file>image/icon/modified.ico</file>
         <file>image/icon/rename.ico</file>
+        <file>image/file-git-unsubmitted.png</file>
+        <file>image/file-svn-unsubmitted.png</file>
     </qresource>
 </RCC>
