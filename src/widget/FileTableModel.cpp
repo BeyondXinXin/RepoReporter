@@ -170,7 +170,6 @@ void FileTableDelegate::paint(
 		}
 	}
 
-
 	QStyleOptionViewItem newOption(option);
 	newOption.palette.setColor(QPalette::Text,            textColor);
 	newOption.palette.setColor(QPalette::HighlightedText, textColor);

@@ -80,18 +80,20 @@ void LogTableView::hideEvent(QHideEvent* event)
 
 void LogTableView::InitUI()
 {
+	setShowGrid(false);
+
 	setDragEnabled(false);
 	setAcceptDrops(false);
 	setDragDropMode(QAbstractItemView::NoDragDrop);
 
 	verticalHeader()->setDefaultSectionSize(10);
 
-	horizontalHeader()->setHighlightSections(false);
-
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-	setShowGrid(false);
+	horizontalHeader()->setHighlightSections(false);
+	horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+	horizontalHeader()->resizeSection(1, 24 * 4);
 }
 
 void LogTableView::InitConnect()

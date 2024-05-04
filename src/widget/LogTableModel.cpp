@@ -1,6 +1,7 @@
 ﻿#include "LogTableModel.h"
 
 #include <QRegularExpression>
+#include <QPainter>
 
 #include "utils/VersionControlManager.h"
 
@@ -92,12 +93,7 @@ QVariant LogTableModel::data(const QModelIndex& index, int role) const
 		case 0: return entry.version;
 
 		case 1: {
-			QStringList operationStrings;
-
-			for (const FileOperation& operation : entry.operations) {
-				operationStrings.append(FileOperationToString(operation));
-			}
-			return operationStrings.join(", ");
+			return QVariant();
 		}
 
 		case 2: return entry.author;
@@ -114,6 +110,17 @@ QVariant LogTableModel::data(const QModelIndex& index, int role) const
 		default: return QVariant();
 		}
 	}
+
+	if ((role == Qt::UserRole + 1) && (index.column() == 1)) {
+		QStringList operationStrings;
+		const VCLogEntry& entry = m_Logs[index.row()];
+		for (const FileOperation& operation : entry.operations) {
+			operationStrings.append(FileOperationToString(operation));
+		}
+		return operationStrings;
+	}
+
+
 	return QVariant();
 }
 
@@ -238,6 +245,31 @@ void LogTableDelegate::paint(
 	const QStyleOptionViewItem& option,
 	const QModelIndex& index) const
 {
+	if (1 == index.column()) {
+		auto model = index.model();
+		if (model) {
+			QStringList operations = model->data(index, Qt::UserRole + 1).toStringList();
+			QRect rect = option.rect;
+			int   size = 24;
+			if (operations.contains("M")) {
+				QRect iconRect(rect.left() + 0 * size, rect.top(), size, size);
+				painter->drawPixmap(iconRect, QPixmap(":/image/icon/modified.ico"));
+			}
+			if (operations.contains("A")) {
+				QRect iconRect(rect.left() + 1 * size, rect.top(), size, size);
+				painter->drawPixmap(iconRect, QPixmap(":/image/icon/add.ico"));
+			}
+			if (operations.contains("D")) {
+				QRect iconRect(rect.left() + 2 * size, rect.top(), size, size);
+				painter->drawPixmap(iconRect, QPixmap(":/image/icon/delete.ico"));
+			}
+			if (operations.contains("R")) {
+				QRect iconRect(rect.left() + 3 * size, rect.top(), size, size);
+				painter->drawPixmap(iconRect, QPixmap(":/image/icon/rename.ico"));
+			}
+		}
+	}
+
 	QStyleOptionViewItem newOption(option);
 	if (index.row() == m_CurVerRow) {
 		newOption.font.setBold(true);
@@ -247,7 +279,6 @@ void LogTableDelegate::paint(
 		newOption.palette.setColor(QPalette::Text,            Qt::black);
 		newOption.palette.setColor(QPalette::HighlightedText, Qt::black);
 	}
-
 	QStyledItemDelegate::paint(painter, newOption, index);
 }
 

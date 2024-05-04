@@ -6,5 +6,11 @@
         <file>image/file-git.png</file>
         <file>image/file-svn.png</file>
         <file>image/folder.png</file>
+        <file>image/icon/add.ico</file>
+        <file>image/icon/conflict.ico</file>
+        <file>image/icon/delete.ico</file>
+        <file>image/icon/empty.ico</file>
+        <file>image/icon/modified.ico</file>
+        <file>image/icon/rename.ico</file>
     </qresource>
 </RCC>
