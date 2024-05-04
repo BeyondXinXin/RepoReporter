@@ -9,6 +9,7 @@
 #include <QDebug>
 
 #include "CommandLineManager.h"
+#include "FileUtil.h"
 
 QString LogManager::m_LogFilePath = "";
 
@@ -25,11 +26,8 @@ LogManager::~LogManager()
 void LogManager::Initial()
 {
 	QString configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-
 	m_LogFilePath = configDir + "/log/";
-
 	QDir dir(m_LogFilePath);
-
 	if (!dir.exists()) {
 		if (!dir.mkpath(m_LogFilePath)) {
 			qInfo() << u8"无法创建日志目录。";
@@ -38,6 +36,7 @@ void LogManager::Initial()
 		}
 	}
 	qDebug() << m_LogFilePath;
+	FileUtil::LimtFilesNumber(m_LogFilePath);
 	qInstallMessageHandler(LogMessageOutput);
 }
 

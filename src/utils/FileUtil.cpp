@@ -86,6 +86,19 @@ bool FileUtil::DeleteFileOrFolder(const QString& strPath)
 	return true;
 }
 
+bool FileUtil::LimtFilesNumber(const QString& folderPath, const int& maxNum)
+{
+	QDir dir(folderPath);
+	dir.setSorting(QDir::Name);
+	QStringList files = dir.entryList(QDir::Files);
+	while (files.size() > maxNum) {
+		QString filePath = dir.absoluteFilePath(files.first());
+		QFile::remove(filePath);
+		files.pop_front();
+	}
+	return true;
+}
+
 QString FileUtil::GetFileNameFromPath(const QString& path)
 {
 	QFileInfo fileInfo(path);

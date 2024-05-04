@@ -23,6 +23,8 @@ public:
 
 	static bool DeleteFileOrFolder(const QString& strPath);
 
+	static bool LimtFilesNumber(const QString& folderPath, const int& maxNum = 10);
+
 	static QString GetFileNameFromPath(const QString& path);
 
 	static QString GetDirectoryFromPath(const QString& path);
