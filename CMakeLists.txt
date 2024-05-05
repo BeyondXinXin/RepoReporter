@@ -13,6 +13,7 @@ set(BUILD_SHARED_LIBS "" ON)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 find_package(Qt5LinguistTools)
 
+add_subdirectory(3rd)
 add_subdirectory(src)
 
 add_custom_target(clean-all

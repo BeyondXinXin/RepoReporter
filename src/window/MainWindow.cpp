@@ -76,6 +76,22 @@ void MainWindow::InitUI()
 
 	setWindowTitle(u8"RepoReporter");
 	setWindowIcon(QIcon(":/image/logo.png"));
+
+
+	m_KeyShowWidget =
+		new QHotkey(Qt::Key_P, Qt::ShiftModifier | Qt::ControlModifier, true, this);
+	connect(m_KeyShowWidget, &QHotkey::activated,
+	        this, [&](){
+		if (isVisible()) {
+			if (isMaximized() || isMinimized()) {
+				showNormal();
+			} else {
+				close();
+			}
+		} else {
+			showNormal();
+		}
+	});
 }
 
 void MainWindow::InitConnect()

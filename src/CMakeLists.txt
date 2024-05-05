@@ -10,3 +10,4 @@ set(SRCS ${SOURCES} ${HEADERS} ${RESOURCES} ${FORMS})
 add_executable(${PROJECT_NAME} WIN32 ${SRCS})
 
 target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Concurrent)
+target_link_libraries(${PROJECT_NAME} qhotkey)

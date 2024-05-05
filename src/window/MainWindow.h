@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QHotkey>
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -37,5 +38,7 @@ private:
 private:
 
 	Ui::MainWindow* ui;
+
+	QHotkey* m_KeyShowWidget;
 };
 #endif // MAINWINDOW_H
