@@ -40,6 +40,12 @@ public:
 	static QStringList GetAllBranches(const QString& repoPath);
 
 	static bool CheckUncommittedChanges(const QString& repoPath);
+
+	static void RepoPull(const QString& repoPath);
+
+	static void RepoSync(const QString& repoPath);
+
+	static void RepoCheck(const QString& repoPath);
 };
 
 #endif // VERSIONCONTROLMANAGER_H

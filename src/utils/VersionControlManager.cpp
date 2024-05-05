@@ -189,7 +189,9 @@ void VersionControlManager::ShowLog(const QString& repoPath, const QString& file
 	process.setProgram("TortoiseGitProc.exe");
 	QStringList args;
 	args << "/command:log";
-	args << QString("/path:%1").arg(file);
+	if (!file.isEmpty()) {
+		args << QString("/path:%1").arg(file);
+	}
 	process.setArguments(args);
 	process.setWorkingDirectory(repoPath);
 	process.startDetached();
@@ -365,4 +367,37 @@ bool VersionControlManager::CheckUncommittedChanges(const QString& repoPath)
 	bool res = process.exitCode() != 0;
 
 	return res;
+}
+
+void VersionControlManager::RepoPull(const QString& repoPath)
+{
+	QProcess process;
+	process.setProgram("TortoiseGitProc.exe");
+	QStringList args;
+	args << "/command:pull";
+	process.setArguments(args);
+	process.setWorkingDirectory(repoPath);
+	process.startDetached();
+}
+
+void VersionControlManager::RepoSync(const QString& repoPath)
+{
+	QProcess process;
+	process.setProgram("TortoiseGitProc.exe");
+	QStringList args;
+	args << "/command:sync";
+	process.setArguments(args);
+	process.setWorkingDirectory(repoPath);
+	process.startDetached();
+}
+
+void VersionControlManager::RepoCheck(const QString& repoPath)
+{
+	QProcess process;
+	process.setProgram("TortoiseGitProc.exe");
+	QStringList args;
+	args << "/command:diff";
+	process.setArguments(args);
+	process.setWorkingDirectory(repoPath);
+	process.startDetached();
 }

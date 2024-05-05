@@ -14,42 +14,19 @@
 #include "ProjectTreeModel.h"
 #include "window/ProjectDialog.h"
 #include "utils/ConfigManager.h"
+#include "utils/VersionControlManager.h"
 
 ProjectTreeView::ProjectTreeView(QWidget* parent)
 	: QTreeView(parent)
 {
-	m_AddAction = new QAction(QIcon(":/icons/add.png"), tr(u8"添加项目"), this);
-	connect(m_AddAction,    &QAction::triggered, this, &ProjectTreeView::AddProject);
-
-	m_EditAction = new QAction(QIcon(":/icons/add.png"), tr(u8"编辑项目"), this);
-	connect(m_EditAction,   &QAction::triggered, this, &ProjectTreeView::EditProject);
-
-	m_DeleteAction = new QAction(QIcon(":/icons/delete.png"), tr(u8"删除项目"), this);
-	connect(m_DeleteAction, &QAction::triggered, this, &ProjectTreeView::DeleteProject);
-
 	m_Model = new ProjectTreeModel(this);
 	setModel(m_Model);
 
 	m_Delegate = new ProjectTreeDelegate(this);
 	setItemDelegate(m_Delegate);
 
-	setIndentation(20);
-
-	header()->setVisible(false);
-	header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
-	setDragEnabled(true);
-	setAcceptDrops(true);
-	setDragDropMode(QAbstractItemView::InternalMove);
-	setEditTriggers(QAbstractItemView::NoEditTriggers);
-	setSelectionMode(QAbstractItemView::SingleSelection);
-
-	selectionModel()->connect(
-		selectionModel(), &QItemSelectionModel::selectionChanged,
-		this, &ProjectTreeView::SlotSelectionChanged);
-
-	connect(m_Model, &ProjectTreeModel::SgnItemMoved,
-	        this, &ProjectTreeView::SlotItemMoved);
+	InitUI();
+	InitConnect();
 }
 
 void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
@@ -59,6 +36,13 @@ void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
 	if (selectedIndexes().isEmpty())
 		menu.addAction(m_AddAction);
 	else {
+		menu.addAction(m_BrowseAction);
+		menu.addAction(m_CheckAction);
+		menu.addAction(m_ShowLogAction);
+		menu.addSeparator();
+		menu.addAction(m_PullAction);
+		menu.addAction(m_SyncAction);
+		menu.addSeparator();
 		menu.addAction(m_AddAction);
 		menu.addAction(m_EditAction);
 		menu.addAction(m_DeleteAction);
@@ -138,7 +122,90 @@ void ProjectTreeView::hideEvent(QHideEvent* event)
 	QTreeView::hideEvent(event);
 }
 
-void ProjectTreeView::AddProject()
+void ProjectTreeView::InitUI()
+{
+	setIndentation(20);
+
+	header()->setVisible(false);
+	header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+	setDragEnabled(true);
+	setAcceptDrops(true);
+	setDragDropMode(QAbstractItemView::InternalMove);
+	setEditTriggers(QAbstractItemView::NoEditTriggers);
+	setSelectionMode(QAbstractItemView::SingleSelection);
+}
+
+void ProjectTreeView::InitConnect()
+{
+	auto fun = [&](QAction *& action, const QString& iconPath, const QString& name,
+	               void (ProjectTreeView::*SlogAction)())
+		   {
+			   action = new QAction(QIcon(iconPath), name, this);
+			   connect(action, &QAction::triggered, this, SlogAction);
+		   };
+	fun(m_BrowseAction,  "", u8"浏览",   &ProjectTreeView::OnBrowseAction);
+	fun(m_CheckAction,   "", u8"检查",   &ProjectTreeView::OnCheckAction);
+	fun(m_ShowLogAction, "", u8"日志",   &ProjectTreeView::OnShowLogAction);
+	fun(m_PullAction,    "", u8"拉取",   &ProjectTreeView::OnPullAction);
+	fun(m_SyncAction,    "", u8"同步",   &ProjectTreeView::OnSyncAction);
+	fun(m_AddAction,     "", u8"添加项目", &ProjectTreeView::OnAddAction);
+	fun(m_EditAction,    "", u8"编辑项目", &ProjectTreeView::OnEditAction);
+	fun(m_DeleteAction,  "", u8"删除项目", &ProjectTreeView::OnDeleteAction);
+
+	selectionModel()->connect(
+		selectionModel(), &QItemSelectionModel::selectionChanged,
+		this, &ProjectTreeView::SlotSelectionChanged);
+
+	connect(m_Model, &ProjectTreeModel::SgnItemMoved,
+	        this, &ProjectTreeView::SlotItemMoved);
+}
+
+void ProjectTreeView::CheckRepoState()
+{
+	m_Model->CheckAllRepoState();
+}
+
+QModelIndex ProjectTreeView::GetSelectIndexs() const
+{
+	QModelIndexList indexes = selectionModel()->selection().indexes();
+	if (indexes.isEmpty()) {
+		return QModelIndex();
+	}
+	return indexes.first();
+}
+
+void ProjectTreeView::OnBrowseAction()
+{
+	VersionControlManager::OpenFileDirectory(
+		m_Model->GetIndexPath(m_LastSelectItem), "");
+}
+
+void ProjectTreeView::OnPullAction()
+{
+	VersionControlManager::RepoPull(
+		m_Model->GetIndexPath(m_LastSelectItem));
+}
+
+void ProjectTreeView::OnSyncAction()
+{
+	VersionControlManager::RepoSync(
+		m_Model->GetIndexPath(m_LastSelectItem));
+}
+
+void ProjectTreeView::OnCheckAction()
+{
+	VersionControlManager::RepoCheck(
+		m_Model->GetIndexPath(m_LastSelectItem));
+}
+
+void ProjectTreeView::OnShowLogAction()
+{
+	VersionControlManager::ShowLog(
+		m_Model->GetIndexPath(m_LastSelectItem), "");
+}
+
+void ProjectTreeView::OnAddAction()
 {
 	QModelIndex currentIndex;
 
@@ -167,7 +234,7 @@ void ProjectTreeView::AddProject()
 	}
 }
 
-void ProjectTreeView::EditProject()
+void ProjectTreeView::OnEditAction()
 {
 	QModelIndex currentIndex = selectedIndexes().first();
 	VCRepoEntry projectPath = m_Model->GetIndexProjectPath(currentIndex);
@@ -183,7 +250,7 @@ void ProjectTreeView::EditProject()
 	}
 }
 
-void ProjectTreeView::DeleteProject()
+void ProjectTreeView::OnDeleteAction()
 {
 	QModelIndexList indexes = selectedIndexes();
 	QModelIndex     currentIndex = indexes.first();
@@ -196,11 +263,11 @@ void ProjectTreeView::SlotSelectionChanged(
 {
 	Q_UNUSED(deselected)
 
-	QModelIndexList indexes = selected.indexes();
+	QModelIndex indexe = GetSelectIndexs();
 
-	if (!indexes.isEmpty()) {
-		m_LastSelectItem = indexes.first();
-		emit SgnSelectPathChange(m_Model->GetIndexPath(indexes.first()));
+	if (indexe.isValid()) {
+		m_LastSelectItem = indexe;
+		emit SgnSelectPathChange(m_Model->GetIndexPath(indexe));
 	} else {
 		m_LastSelectItem = QModelIndex();
 	}
@@ -211,9 +278,4 @@ void ProjectTreeView::SlotItemMoved(
 {
 	expand(oldParentIndex);
 	expand(newParentIndex);
-}
-
-void ProjectTreeView::CheckRepoState()
-{
-	m_Model->CheckAllRepoState();
 }

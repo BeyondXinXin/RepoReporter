@@ -26,24 +26,34 @@ protected:
 	void showEvent(QShowEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
 
+private:
+
+	void InitUI();
+	void InitConnect();
+	void CheckRepoState();
+	QModelIndex GetSelectIndexs()const;
+
 private slots:
 
-	void AddProject();
-	void EditProject();
-	void DeleteProject();
+	void OnBrowseAction();
+	void OnCheckAction();
+	void OnShowLogAction();
+
+	void OnPullAction();
+	void OnSyncAction();
+
+	void OnAddAction();
+	void OnEditAction();
+	void OnDeleteAction();
 
 	void SlotSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 	void SlotItemMoved(const QModelIndex& oldParentIndex, const QModelIndex& newParentIndex);
 
 private:
 
-	void CheckRepoState();
-
-private:
-
-	QAction* m_AddAction;
-	QAction* m_EditAction;
-	QAction* m_DeleteAction;
+	QAction* m_BrowseAction, * m_CheckAction, * m_ShowLogAction;
+	QAction* m_PullAction, * m_SyncAction;
+	QAction* m_AddAction, * m_EditAction, * m_DeleteAction;
 
 	ProjectTreeModel* m_Model;
 	ProjectTreeDelegate* m_Delegate;
