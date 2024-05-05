@@ -118,10 +118,10 @@ QVariant FileTableModel::headerData(int section, Qt::Orientation orientation, in
 			return u8"操作";
 
 		case 3:
-			return u8"添加行数";
+			return u8"添加";
 
 		case 4:
-			return u8"删除行数";
+			return u8"删除";
 
 		default:
 			return u8"";

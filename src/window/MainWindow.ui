@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1036</width>
-    <height>539</height>
+    <width>914</width>
+    <height>425</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,112 +28,76 @@ QTableView::item:selected {
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_3">
-    <property name="spacing">
-     <number>0</number>
-    </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <property name="leftMargin">
-     <number>0</number>
+     <number>12</number>
     </property>
     <property name="topMargin">
-     <number>0</number>
+     <number>12</number>
     </property>
     <property name="rightMargin">
-     <number>0</number>
+     <number>12</number>
     </property>
     <property name="bottomMargin">
-     <number>0</number>
+     <number>12</number>
     </property>
     <item>
-     <widget class="QWidget" name="widget" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>56</height>
-       </size>
+     <widget class="QSplitter" name="verticalSplitter">
+      <property name="lineWidth">
+       <number>1</number>
       </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>56</height>
-       </size>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <property name="spacing">
-       <number>12</number>
+      <property name="handleWidth">
+       <number>16</number>
       </property>
-      <property name="leftMargin">
-       <number>12</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>12</number>
-      </property>
-      <property name="bottomMargin">
-       <number>12</number>
-      </property>
-      <item>
-       <widget class="QSplitter" name="verticalSplitter">
-        <property name="lineWidth">
-         <number>1</number>
+      <widget class="ProjectTreeView" name="projectTreeView">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>200</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="leftMargin">
+         <number>0</number>
         </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+        <property name="bottomMargin">
+         <number>0</number>
         </property>
-        <property name="handleWidth">
-         <number>16</number>
-        </property>
-        <widget class="ProjectTreeView" name="projectTreeView">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>200</height>
-          </size>
-         </property>
-        </widget>
-        <widget class="QWidget" name="layoutWidget">
-         <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
           <property name="leftMargin">
-           <number>0</number>
+           <number>16</number>
           </property>
-          <property name="bottomMargin">
+          <property name="topMargin">
            <number>0</number>
           </property>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <property name="leftMargin">
-             <number>16</number>
+           <widget class="QPushButton" name="branchBtn">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>36</height>
+             </size>
             </property>
-            <property name="topMargin">
-             <number>0</number>
+            <property name="maximumSize">
+             <size>
+              <width>147</width>
+              <height>36</height>
+             </size>
             </property>
-            <item>
-             <widget class="QPushButton" name="branchBtn">
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>36</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>147</width>
-                <height>36</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-                <underline>true</underline>
-               </font>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton {
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <underline>true</underline>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
     text-align: left;
     color: blue;
     background-color: transparent;
@@ -141,123 +105,121 @@ QTableView::item:selected {
 QPushButton:hover {
     color: red;
 }</string>
-              </property>
-              <property name="text">
-               <string>main</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="SearchLineEdit" name="searchEdit">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>36</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>36</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QSplitter" name="levelSplitter">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
             </property>
-            <property name="childrenCollapsible">
-             <bool>true</bool>
+            <property name="text">
+             <string>main</string>
             </property>
-            <widget class="LogTableView" name="logTableView">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-            </widget>
-            <widget class="MessageTextEdit" name="editMessage">
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-            <widget class="FileTableView" name="fileTableView"/>
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <property name="topMargin">
-             <number>4</number>
+           <widget class="SearchLineEdit" name="searchEdit">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>36</height>
+             </size>
             </property>
-            <property name="bottomMargin">
-             <number>4</number>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>36</height>
+             </size>
             </property>
-            <item>
-             <widget class="QLabel" name="labState">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="AllbranchCbox">
-              <property name="minimumSize">
-               <size>
-                <width>120</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>120</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>所有分支</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="RefreshBtn">
-              <property name="minimumSize">
-               <size>
-                <width>120</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>120</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>刷新</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           </widget>
           </item>
          </layout>
-        </widget>
-       </widget>
-      </item>
-     </layout>
+        </item>
+        <item>
+         <widget class="QSplitter" name="levelSplitter">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="childrenCollapsible">
+           <bool>true</bool>
+          </property>
+          <widget class="LogTableView" name="logTableView">
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+          </widget>
+          <widget class="MessageTextEdit" name="editMessage">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="FileTableView" name="fileTableView"/>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labState">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="AllbranchCbox">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>所有分支</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="RefreshBtn">
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>80</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>刷新</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

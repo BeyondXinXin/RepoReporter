@@ -118,6 +118,15 @@ void FileTableView::InitUI()
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
 
+	horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+	horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
+	horizontalHeader()->setSectionResizeMode(3, QHeaderView::Fixed);
+	horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
+	horizontalHeader()->resizeSection(1, 95);
+	horizontalHeader()->resizeSection(2, 55);
+	horizontalHeader()->resizeSection(3, 55);
+	horizontalHeader()->resizeSection(4, 55);
+
 	setShowGrid(false);
 }
 
