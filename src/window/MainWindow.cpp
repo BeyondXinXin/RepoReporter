@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget* parent)
 	InitConnect();
 
 	SystemTrayManager::Instance()->setMainWidget(this);
+	VersionControlManager::CheckAndSetQuotepath();
 	qInfo() << u8"软件启动。";
 }
 
@@ -105,7 +106,7 @@ void MainWindow::InitConnect()
 	connect(ui->RefreshBtn,    &QPushButton::clicked,
 	        this, &MainWindow::RefreshRepoLog);
 
-	connect(ui->AllbranchCbox,    &QCheckBox::clicked,
+	connect(ui->AllbranchCbox, &QCheckBox::clicked,
 	        this, &MainWindow::RefreshRepoLog);
 }
 

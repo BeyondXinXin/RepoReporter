@@ -8,6 +8,8 @@
 class VersionControlManager {
 public:
 
+	static bool VersionControlManager::CheckAndSetQuotepath();
+
 	static QList<VCLogEntry>FetchLog(
 		const QString& repoPath, QString& curVersion, bool allBranch = false);
 

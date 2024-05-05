@@ -11,6 +11,39 @@
 
 #include "FileUtil.h"
 
+bool VersionControlManager::VersionControlManager::CheckAndSetQuotepath()
+{
+	QProcess process;
+	process.setProgram("git");
+	QStringList args;
+	args << "config" << "--global" << "core.quotepath";
+	process.setArguments(args);
+	process.start();
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << "Failed to run git config command.";
+		return false;
+	}
+
+	QByteArray output = process.readAllStandardOutput();
+	QString    outputStr(output);
+	bool quotepath = outputStr.trimmed().toLower() == "true";
+
+	if (quotepath) {
+		QProcess setProcess;
+		setProcess.setProgram("git");
+		QStringList setArgs;
+		setArgs << "config" << "--global" << "core.quotepath" << "false";
+		setProcess.setArguments(setArgs);
+		setProcess.start();
+		if (!setProcess.waitForStarted() || !setProcess.waitForFinished()) {
+			qInfo() << "Failed to set core.quotepath to false.";
+			return false;
+		}
+	}
+
+	return true;
+}
+
 QList<VCLogEntry>VersionControlManager::FetchLog(
 	const QString& repoPath, QString& curVersion, bool allBranch)
 {
