@@ -28,18 +28,39 @@ LogTableView::LogTableView(QWidget* parent)
 	InitConnect();
 }
 
-void LogTableView::ChangeProPath(const QString& path)
+void LogTableView::ChangeProPath(const QString& path, const bool& allBranch)
 {
 	m_CurPaht = path;
-	m_Model->UpdataLog(path);
+	m_Model->UpdataLog(path, allBranch);
 	emit SgnStateLabChange(-1, 0);
 	emit SgnStateLabChange(0, m_Model->rowCount());
+
+	setCurrentIndex(model()->index(0, 0));
+}
+
+void LogTableView::RefreshRepo(const bool& allBranch)
+{
+	m_Model->UpdataLog("", allBranch);
+	emit SgnChangeSelectLog(QStringList());
+	emit SgnUpdateDescription("");
+
+	QCoreApplication::processEvents();
+
+	m_Model->UpdataLog(m_CurPaht, allBranch);
+	emit SgnStateLabChange(-1, 0);
+	emit SgnStateLabChange(0, m_Model->rowCount());
+	setCurrentIndex(model()->index(0, 0));
 }
 
 void LogTableView::setFilterRegExp(const QRegExp& regExp, QList<int>filterItems)
 {
 	m_FilterProxyModel->SetFilterItems(filterItems);
 	m_FilterProxyModel->setFilterRegExp(regExp);
+}
+
+QString LogTableView::GetCurrentRepoPath() const
+{
+	return m_CurPaht;
 }
 
 void LogTableView::contextMenuEvent(QContextMenuEvent* event)

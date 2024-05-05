@@ -9,7 +9,7 @@ class VersionControlManager {
 public:
 
 	static QList<VCLogEntry>FetchLog(
-		const QString& repoPath, QString& curVersion);
+		const QString& repoPath, QString& curVersion, bool allBranch = false);
 
 	static QList<VCFileEntry>GetChangesForVersion(
 		const QString& repoPath, const QList<QString>& versions);

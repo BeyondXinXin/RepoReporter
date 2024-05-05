@@ -15,8 +15,11 @@ public:
 
 	LogTableView(QWidget* parent = nullptr);
 
-	void ChangeProPath(const QString& path);
+	void ChangeProPath(const QString& path, const bool& allBranch);
+	void RefreshRepo(const bool& allBranch);
 	void setFilterRegExp(const QRegExp& regExp, QList<int>filterItems);
+
+	QString GetCurrentRepoPath()const;
 
 Q_SIGNALS:
 

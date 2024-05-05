@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
 	qInfo() << u8"软件关闭。";
-	
+
 	if (isMaximized()) {
 		ConfigManager::GetInstance().WriteValue("LastNormalWindowGeometry", normalGeometry());
 	} else {
@@ -98,15 +98,24 @@ void MainWindow::InitConnect()
 
 	connect(ui->searchEdit,    &SearchLineEdit::SgnFilterChanged,
 	        this, &MainWindow::LogTableTextFilterChanged);
+
 	connect(ui->searchEdit,    &SearchLineEdit::textChanged,
 	        this, &MainWindow::LogTableTextFilterChanged);
+
+	connect(ui->RefreshBtn,    &QPushButton::clicked,
+	        this, &MainWindow::RefreshRepoLog);
+
+	connect(ui->AllbranchCbox,    &QCheckBox::clicked,
+	        this, &MainWindow::RefreshRepoLog);
 }
 
 void MainWindow::ChangeSelectPro(const QString& path)
 {
+	ui->AllbranchCbox->setChecked(false);
+
 	ui->searchEdit->clear();
-	ui->logTableView->ChangeProPath(path);
 	ui->fileTableView->ChangeProPath(path);
+	ui->logTableView->ChangeProPath(path, false);
 
 	QString branchName = VersionControlManager::GetCurrentBranch(path);
 	ui->branchBtn->setText(branchName);
@@ -150,4 +159,21 @@ void MainWindow::LogTableTextFilterChanged()
 	                 ui->searchEdit->GetCaseSensitivity(),
 	                 ui->searchEdit->GetPatternSyntax());
 	ui->logTableView->setFilterRegExp(regExp, ui->searchEdit->GetFilterList());
+}
+
+void MainWindow::RefreshRepoLog()
+{
+	bool allBracch = ui->AllbranchCbox->isChecked();
+
+	ui->searchEdit->clear();
+	ui->logTableView->RefreshRepo(allBracch);
+
+	if (allBracch) {
+		ui->branchBtn->setText(u8"所有分支");
+	} else {
+		QString branchName =
+			VersionControlManager::GetCurrentBranch(
+				ui->logTableView->GetCurrentRepoPath());
+		ui->branchBtn->setText(branchName);
+	}
 }

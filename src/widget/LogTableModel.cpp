@@ -13,14 +13,14 @@ LogTableModel::LogTableModel(QObject* parent)
 LogTableModel::~LogTableModel()
 {}
 
-void LogTableModel::UpdataLog(const QString& path)
+void LogTableModel::UpdataLog(const QString& path, const bool& allBranch)
 {
 	beginResetModel();
 	m_Logs.clear();
 	m_CurVersion = "";
 
 	if (!path.isEmpty()) {
-		m_Logs = VersionControlManager::FetchLog(path, m_CurVersion);
+		m_Logs = VersionControlManager::FetchLog(path, m_CurVersion, allBranch);
 	}
 	endResetModel();
 

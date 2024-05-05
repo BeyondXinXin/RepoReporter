@@ -12,7 +12,7 @@
 #include "FileUtil.h"
 
 QList<VCLogEntry>VersionControlManager::FetchLog(
-	const QString& repoPath, QString& curVersion)
+	const QString& repoPath, QString& curVersion, bool allBranch)
 {
 	QList<VCLogEntry> logEntries;
 
@@ -20,8 +20,11 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 	process.setProgram("git");
 	QStringList args;
 
-	args << "log" /*<< "--all"*/
-	     << "--name-status"
+	args << "log";
+	if (allBranch) {
+		args << "--all";
+	}
+	args << "--name-status"
 	     << "--pretty=format:%h|%B|%an|%ad|"
 	     << "--date=format-local:%c";
 	process.setArguments(args);

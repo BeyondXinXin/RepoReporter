@@ -32,6 +32,8 @@ private:
 	void UpdateStateLab(const int& index, const int& num);
 	void LogTableTextFilterChanged();
 
+	void RefreshRepoLog();
+
 private:
 
 	Ui::MainWindow* ui;
