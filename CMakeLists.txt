@@ -10,6 +10,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(BUILD_SHARED_LIBS "" ON)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/bin/Release)
+
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 find_package(Qt5LinguistTools)
 

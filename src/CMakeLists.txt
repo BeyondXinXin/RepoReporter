@@ -1,7 +1,7 @@
 ﻿file(GLOB_RECURSE SOURCES "*.cpp" "*.cxx" "*.cc")
 file(GLOB_RECURSE HEADERS "*.h")
 file(GLOB_RECURSE FORMS *.ui)
-file(GLOB_RECURSE RESOURCES "*.qrc")
+file(GLOB_RECURSE RESOURCES "*.qrc" "*.rc")
 
 source_group("src" FILES ${HEADERS} ${SOURCES} ${FORMS})
 source_group("src\\qrc" FILES ${RESOURCES})
