@@ -345,7 +345,7 @@ QString VersionControlManager::GetCurrentBranch(
 		args << "rev-parse" << "--abbrev-ref" << "HEAD";
 		QString res;
 		DoProcess(GitPath, args, repoPath, res);
-		return res;
+		return res.simplified();
 	}
 	return "";
 }
