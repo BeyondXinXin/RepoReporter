@@ -496,7 +496,6 @@ QList<QString>VersionControlManager::AnalysisGitLogToLogEntry(
 				entry.operations << FileOperation::Rename;
 				filePath = tmp.at(2);
 			}
-
 			fileEntry.extensionName = QFileInfo(tmp.at(1)).suffix();
 			fileEntry.filePath = filePath;
 			fileMaps[version][filePath] = fileEntry;
@@ -523,23 +522,37 @@ void VersionControlManager::AnalysisGitChangesToFileEntry(
 		QStringList fileList = parts[4].split("\n", QString::SkipEmptyParts);
 		foreach(QString file, fileList)
 		{
-			QStringList tmp = file.remove(" ").split(QRegExp("\\s+"));
+			QStringList tmp = file.split("\t");
 			QString     filePath = tmp.at(2);
-			int startIndex = filePath.indexOf('{');
-			if (startIndex != -1) {
-				int endIndex = filePath.indexOf('}', startIndex);
-				if (endIndex != -1) {
-					QString pattern = filePath.mid(startIndex, endIndex - startIndex + 1);
-					QStringList parts = pattern.mid(1, pattern.length() - 2).split("=>");
-					if (parts.size() == 2) {
-						filePath.replace(pattern, parts[1]);
+
+			if (filePath.contains(" => ")) {
+				QStringList completeList = filePath.split(" => ");
+				QStringList beforeList = completeList[0].split("{");
+				QStringList afterList = completeList[1].split("}");
+				if (2 == afterList.size()) {
+					filePath = beforeList.at(0);
+				} else {
+					filePath.clear();
+				}
+
+				if (2 == afterList.size()) {
+					if (afterList.at(0).isEmpty()) {
+						filePath += afterList[1].remove(0, 1);
+					} else {
+						filePath += afterList.at(0) + afterList.at(1);
 					}
+				} else {
+					filePath += afterList.at(0);
 				}
 			}
 
-			VCFileEntry& fileEntry = fileMap[filePath];
-			fileEntry.addNum += tmp[0].toInt();
-			fileEntry.deleteNum += tmp[1].toInt();
+			if (fileMap.contains(filePath)) {
+				VCFileEntry& fileEntry = fileMap[filePath];
+				fileEntry.addNum += tmp[0].toInt();
+				fileEntry.deleteNum += tmp[1].toInt();
+			} else {
+				qInfo() << u8"文件名解析失败" << version << filePath;
+			}
 		}
 	}
 }
