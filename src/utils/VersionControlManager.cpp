@@ -75,7 +75,7 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 	if (RepoType::Git == CurrentRepoType) {
 		QStringList args;
 
-		args << "log" << "--name-status" << "--pretty=format:%h|%B|%an|%ad|" << "--date=format-local:%c";
+		args << "log" << "--name-status" << "--pretty=format:^^^^%h|%B|%an|%ad|" << "--date=format-local:%c";
 		if (allBranch) {
 			args << "--all";
 		}
@@ -83,19 +83,19 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 		if (!DoProcess(GitPath, args, repoPath, outputStr)) {
 			return logEntries;
 		}
-		QStringList    lines = outputStr.split("\n\n");
+		QStringList    lines = outputStr.split("^^^^");
 		QList<QString> versions;
 		QHash<QString, VCLogEntry> logEntrieHash;
 		versions = AnalysisGitLogToLogEntry(lines, logEntrieHash, fileMaps);
 
 		args.clear();
-		args << "log" << "--numstat" << "--pretty=format:%h|%B|%an|%ad|";
+		args << "log" << "--numstat" << "--pretty=format:^^^^%h|%B|%an|%ad|";
 		if (allBranch) {
 			args << "--all";
 		}
 		outputStr;
 		if (DoProcess(GitPath, args, repoPath, outputStr)) {
-			lines = outputStr.split("\n\n");
+			lines = outputStr.split("^^^^");
 			AnalysisGitChangesToFileEntry(lines, logEntrieHash, fileMaps);
 		}
 
@@ -476,15 +476,12 @@ QList<QString>VersionControlManager::AnalysisGitLogToLogEntry(
 		entry.date = QLocale::c().toDateTime(
 			parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
 		QStringList fileList = parts[4].split("\n", QString::SkipEmptyParts);
-
 		foreach(QString file, fileList)
 		{
 			VCFileEntry fileEntry;
 			QStringList tmp = file.split("\t");
 			QString     operation = tmp[0].trimmed();
 			QString     filePath = tmp.at(1);
-			fileEntry.extensionName = QFileInfo(tmp.at(1)).suffix();
-			fileEntry.filePath = filePath;
 			if (operation.startsWith('M')) {
 				fileEntry.operation = FileOperation::Modify;
 				entry.operations << FileOperation::Modify;
@@ -497,7 +494,11 @@ QList<QString>VersionControlManager::AnalysisGitLogToLogEntry(
 			} else if (operation.startsWith('R')) {
 				fileEntry.operation = FileOperation::Rename;
 				entry.operations << FileOperation::Rename;
+				filePath = tmp.at(2);
 			}
+
+			fileEntry.extensionName = QFileInfo(tmp.at(1)).suffix();
+			fileEntry.filePath = filePath;
 			fileMaps[version][filePath] = fileEntry;
 		}
 	}
@@ -520,11 +521,22 @@ void VersionControlManager::AnalysisGitChangesToFileEntry(
 		VCLogEntry& entry = logEntries[version];
 		QMap<QString, VCFileEntry>& fileMap = fileMaps[version];
 		QStringList fileList = parts[4].split("\n", QString::SkipEmptyParts);
-
 		foreach(QString file, fileList)
 		{
-			QStringList  tmp = file.split(QRegExp("\\s+"));
-			QString      filePath = tmp.at(2);
+			QStringList tmp = file.remove(" ").split(QRegExp("\\s+"));
+			QString     filePath = tmp.at(2);
+			int startIndex = filePath.indexOf('{');
+			if (startIndex != -1) {
+				int endIndex = filePath.indexOf('}', startIndex);
+				if (endIndex != -1) {
+					QString pattern = filePath.mid(startIndex, endIndex - startIndex + 1);
+					QStringList parts = pattern.mid(1, pattern.length() - 2).split("=>");
+					if (parts.size() == 2) {
+						filePath.replace(pattern, parts[1]);
+					}
+				}
+			}
+
 			VCFileEntry& fileEntry = fileMap[filePath];
 			fileEntry.addNum += tmp[0].toInt();
 			fileEntry.deleteNum += tmp[1].toInt();

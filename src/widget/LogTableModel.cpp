@@ -255,7 +255,7 @@ void LogTableDelegate::paint(
 		if (model) {
 			QStringList operations = model->data(index, Qt::UserRole + 1).toStringList();
 			QRect rect = option.rect;
-			int   size = 18;
+			int   size = 24;
 			if (operations.contains("M")) {
 				QRect iconRect(rect.left() + 0 * size, rect.top() + 1, size, size);
 				painter->drawPixmap(iconRect, QPixmap(":/image/icon/modified.ico"));
