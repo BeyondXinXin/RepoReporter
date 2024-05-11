@@ -15,7 +15,8 @@ public:
 	explicit LogTableModel(QObject* parent = nullptr);
 	~LogTableModel() override;
 
-	void UpdataLog(const QString& path, const bool& allBranch);
+	void Update(const QList<VCLogEntry>& logs, const QString& version);
+	void Clear();
 
 	QString GetIndexVersion(const QModelIndex& index)const;
 	QString GetIndexMessage(const QModelIndex& index)const;

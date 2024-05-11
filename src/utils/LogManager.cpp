@@ -7,6 +7,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QDebug>
+#include <QIODevice>
 
 #include "CommandLineManager.h"
 #include "FileUtil.h"
@@ -52,7 +53,7 @@ void LogManager::LogMessageOutput(QtMsgType type,
 	switch (type) {
 	case QtDebugMsg: {
 		if (CommandLineManager::option.debug) {
-			cout << msg << Qt::endl;
+			cout << msg << endl;
 		}
 		return;
 	}
@@ -87,7 +88,7 @@ void LogManager::LogMessageOutput(QtMsgType type,
 	                  .arg(msg)
 	                  .arg(QString(context.function).remove(QRegExp("\\((.*)\\)")));
 
-	cout << message << Qt::endl;
+	cout << message << endl;
 	cout.flush();
 
 

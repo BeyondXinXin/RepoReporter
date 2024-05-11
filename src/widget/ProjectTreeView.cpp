@@ -33,19 +33,41 @@ void ProjectTreeView::contextMenuEvent(QContextMenuEvent* event)
 {
 	QMenu menu(this);
 
-	if (selectedIndexes().isEmpty())
+	QModelIndex index = GetSelectIndex();
+
+	if (!index.isValid()) {
 		menu.addAction(m_AddAction);
-	else {
-		menu.addAction(m_BrowseAction);
-		menu.addAction(m_CheckAction);
-		menu.addAction(m_ShowLogAction);
-		menu.addSeparator();
-		menu.addAction(m_PullAction);
-		menu.addAction(m_SyncAction);
-		menu.addSeparator();
-		menu.addAction(m_AddAction);
-		menu.addAction(m_EditAction);
-		menu.addAction(m_DeleteAction);
+	} else {
+		RepoType type = m_Model->GetIndexEntry(GetSelectIndex()).type;
+		if (type == RepoType::Git) {
+			m_PullAction->setText(u8"拉取");
+			menu.addAction(m_BrowseAction);
+			menu.addAction(m_CheckAction);
+			menu.addAction(m_ShowLogAction);
+			menu.addSeparator();
+			menu.addAction(m_PullAction);
+			menu.addAction(m_SyncAction);
+			menu.addSeparator();
+			menu.addAction(m_AddAction);
+			menu.addAction(m_EditAction);
+			menu.addAction(m_DeleteAction);
+		} else if (type == RepoType::Svn) {
+			m_PullAction->setText(u8"更新");
+			menu.addAction(m_BrowseAction);
+			menu.addAction(m_CheckAction);
+			menu.addAction(m_ShowLogAction);
+			menu.addAction(m_PullAction);
+			menu.addSeparator();
+			menu.addAction(m_AddAction);
+			menu.addAction(m_EditAction);
+			menu.addAction(m_DeleteAction);
+		} else {
+			menu.addAction(m_BrowseAction);
+			menu.addSeparator();
+			menu.addAction(m_AddAction);
+			menu.addAction(m_EditAction);
+			menu.addAction(m_DeleteAction);
+		}
 	}
 	menu.exec(event->globalPos());
 }
@@ -166,7 +188,7 @@ void ProjectTreeView::CheckRepoState()
 	m_Model->CheckAllRepoState();
 }
 
-QModelIndex ProjectTreeView::GetSelectIndexs() const
+QModelIndex ProjectTreeView::GetSelectIndex() const
 {
 	QModelIndexList indexes = selectionModel()->selection().indexes();
 	if (indexes.isEmpty()) {
@@ -183,19 +205,19 @@ void ProjectTreeView::OnBrowseAction()
 
 void ProjectTreeView::OnPullAction()
 {
-	VersionControlManager::RepoPull(
+	VersionControlManager::PullRepository(
 		m_Model->GetIndexPath(m_LastSelectItem));
 }
 
 void ProjectTreeView::OnSyncAction()
 {
-	VersionControlManager::RepoSync(
+	VersionControlManager::SyncRepository(
 		m_Model->GetIndexPath(m_LastSelectItem));
 }
 
 void ProjectTreeView::OnCheckAction()
 {
-	VersionControlManager::RepoCheck(
+	VersionControlManager::CheckRepository(
 		m_Model->GetIndexPath(m_LastSelectItem));
 }
 
@@ -237,7 +259,7 @@ void ProjectTreeView::OnAddAction()
 void ProjectTreeView::OnEditAction()
 {
 	QModelIndex currentIndex = selectedIndexes().first();
-	VCRepoEntry projectPath = m_Model->GetIndexProjectPath(currentIndex);
+	VCRepoEntry projectPath = m_Model->GetIndexEntry(currentIndex);
 
 	ProjectDialog dialog(ProjectDialog::Edit);
 	dialog.SetProjectData(projectPath);
@@ -263,10 +285,11 @@ void ProjectTreeView::SlotSelectionChanged(
 {
 	Q_UNUSED(deselected)
 
-	QModelIndex indexe = GetSelectIndexs();
+	QModelIndex indexe = GetSelectIndex();
 
 	if (indexe.isValid()) {
 		m_LastSelectItem = indexe;
+		VersionControlManager::CurrentRepoType = m_Model->GetIndexEntry(indexe).type;
 		emit SgnSelectPathChange(m_Model->GetIndexPath(indexe));
 	} else {
 		m_LastSelectItem = QModelIndex();

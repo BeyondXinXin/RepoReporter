@@ -29,7 +29,7 @@ private:
 	void InitUI();
 	void InitConnect();
 
-	void ChangeSelectPro(const QString& path);
+	void ChangeRepo(const QString& path);
 	void UpdateStateLab(const int& index, const int& num);
 	void LogTableTextFilterChanged();
 
@@ -40,5 +40,6 @@ private:
 	Ui::MainWindow* ui;
 
 	QHotkey* m_KeyShowWidget;
+	QString m_CurPaht;
 };
 #endif // MAINWINDOW_H

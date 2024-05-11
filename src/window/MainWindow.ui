@@ -80,13 +80,13 @@ QTableView::item:selected {
            <widget class="QPushButton" name="branchBtn">
             <property name="minimumSize">
              <size>
-              <width>150</width>
+              <width>100</width>
               <height>36</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>147</width>
+              <width>100</width>
               <height>36</height>
              </size>
             </property>

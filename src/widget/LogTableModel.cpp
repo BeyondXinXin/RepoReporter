@@ -13,17 +13,22 @@ LogTableModel::LogTableModel(QObject* parent)
 LogTableModel::~LogTableModel()
 {}
 
-void LogTableModel::UpdataLog(const QString& path, const bool& allBranch)
+void LogTableModel::Update(
+	const QList<VCLogEntry>& logs, const QString& version)
 {
 	beginResetModel();
-	m_Logs.clear();
-	m_CurVersion = "";
-
-	if (!path.isEmpty()) {
-		m_Logs = VersionControlManager::FetchLog(path, m_CurVersion, allBranch);
-	}
+	m_CurVersion = version;
+	m_Logs = logs;
 	endResetModel();
+	UpdateCurrentVersion();
+}
 
+void LogTableModel::Clear()
+{
+	beginResetModel();
+	m_CurVersion = "";
+	m_Logs.clear();
+	endResetModel();
 	UpdateCurrentVersion();
 }
 
@@ -250,21 +255,21 @@ void LogTableDelegate::paint(
 		if (model) {
 			QStringList operations = model->data(index, Qt::UserRole + 1).toStringList();
 			QRect rect = option.rect;
-			int   size = 24;
+			int   size = 18;
 			if (operations.contains("M")) {
-				QRect iconRect(rect.left() + 0 * size, rect.top(), size, size);
+				QRect iconRect(rect.left() + 0 * size, rect.top() + 1, size, size);
 				painter->drawPixmap(iconRect, QPixmap(":/image/icon/modified.ico"));
 			}
 			if (operations.contains("A")) {
-				QRect iconRect(rect.left() + 1 * size, rect.top(), size, size);
+				QRect iconRect(rect.left() + 1 * size, rect.top() + 1, size, size);
 				painter->drawPixmap(iconRect, QPixmap(":/image/icon/add.ico"));
 			}
 			if (operations.contains("D")) {
-				QRect iconRect(rect.left() + 2 * size, rect.top(), size, size);
+				QRect iconRect(rect.left() + 2 * size, rect.top() + 1, size, size);
 				painter->drawPixmap(iconRect, QPixmap(":/image/icon/delete.ico"));
 			}
 			if (operations.contains("R")) {
-				QRect iconRect(rect.left() + 3 * size, rect.top(), size, size);
+				QRect iconRect(rect.left() + 3 * size, rect.top() + 1, size, size);
 				painter->drawPixmap(iconRect, QPixmap(":/image/icon/rename.ico"));
 			}
 		}

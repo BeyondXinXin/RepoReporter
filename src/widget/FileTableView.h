@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QTableView>
 
+#include "data/VCSDataStructures.h"
+
 class FileTableModel;
 class FileTableDelegate;
 
@@ -15,11 +17,12 @@ public:
 	FileTableView(QWidget* parent = nullptr);
 
 	void ChangeLog(const QList<QString>& versions);
-	void ChangeProPath(const QString& path);
+	void ChangeRepo(const QString& path, QHash<QString, QMap<QString, VCFileEntry> >repoFileDictionary);
 
 Q_SIGNALS:
 
 	void SgnStateLabChange(const int& index, const int& num);
+	void SgnChangeLogCompleted();
 
 protected:
 
@@ -72,6 +75,8 @@ private:
 
 	QString m_MarkCompareFile;
 	QString m_MarkCompareVersion;
+
+	QHash<QString, QMap<QString, VCFileEntry> >m_RepoFileDictionary;
 };
 
 #endif // LOGTABLEWIDGET_H

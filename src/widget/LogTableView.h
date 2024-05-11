@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QTableView>
 
+#include "data/VCSDataStructures.h"
+
 class LogTableModel;
 class LogTableDelegate;
 class LogTableSortFilterProxyModel;
@@ -15,17 +17,14 @@ public:
 
 	LogTableView(QWidget* parent = nullptr);
 
-	void ChangeProPath(const QString& path, const bool& allBranch);
-	void RefreshRepo(const bool& allBranch);
+	void ChangeRepo(const QList<VCLogEntry>& logs, const QString& version);
 	void setFilterRegExp(const QRegExp& regExp, QList<int>filterItems);
-
-	QString GetCurrentRepoPath()const;
+	void Clear();
 
 Q_SIGNALS:
 
 	void SgnChangeSelectLog(const QList<QString>& versions);
 	void SgnUpdateDescription(const QString& str);
-
 	void SgnStateLabChange(const int& index, const int& num);
 
 protected:
@@ -57,8 +56,6 @@ private:
 	LogTableModel* m_Model;
 	LogTableDelegate* m_Delegate;
 	LogTableSortFilterProxyModel* m_FilterProxyModel;
-
-	QString m_CurPaht;
 };
 
 

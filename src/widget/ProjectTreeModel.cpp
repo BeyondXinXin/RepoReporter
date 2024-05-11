@@ -228,7 +228,7 @@ QString ProjectTreeModel::GetIndexPath(const QModelIndex& index) const
 	return node->data.path;
 }
 
-VCRepoEntry ProjectTreeModel::GetIndexProjectPath(const QModelIndex& index) const
+VCRepoEntry ProjectTreeModel::GetIndexEntry(const QModelIndex& index) const
 {
 	if (!index.isValid()) {
 		return VCRepoEntry("", "");
@@ -462,7 +462,7 @@ void ProjectTreeModel::LoadNodeFromJson(const QJsonArray& jsonArray, Node* paren
 void ProjectTreeModel::CheckRepoState(Node* node)
 {
 	for (Node* child : node->children) {
-		if (VersionControlManager::CheckUncommittedChanges(child->data.path)) {
+		if (VersionControlManager::CheckUncommittedChanges(child->data.path, child->data.type)) {
 			child->data.state = RepoState::Unsubmitted;
 		}
 		CheckRepoState(child);

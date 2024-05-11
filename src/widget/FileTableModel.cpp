@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QFileInfo>
+#include <QtConcurrent>
 
 #include "utils/VersionControlManager.h"
 #include "utils/FileUtil.h"
@@ -13,13 +14,10 @@ FileTableModel::FileTableModel(QObject* parent)
 FileTableModel::~FileTableModel()
 {}
 
-void FileTableModel::UpdataFile(const QString& path, const QList<QString>& versions)
+void FileTableModel::Update(const QList<VCFileEntry>& files)
 {
 	beginResetModel();
-	m_Files.clear();
-	if (!versions.isEmpty()) {
-		m_Files = VersionControlManager::GetChangesForVersion(path, versions);
-	}
+	m_Files = files;
 	endResetModel();
 }
 

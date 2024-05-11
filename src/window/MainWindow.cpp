@@ -42,7 +42,6 @@ void MainWindow::showEvent(QShowEvent* event)
 		"VerticalSplitterSize", QList<int>{ 400, 1000 });
 	QList<int> size2 = ConfigManager::GetInstance().ReadList<int>(
 		"LevelSplitterSize", QList<int>{ 400, 400, 400 });
-
 	ui->verticalSplitter->setSizes(size1);
 	ui->levelSplitter->setSizes(size2);
 
@@ -55,7 +54,6 @@ void MainWindow::hideEvent(QHideEvent* event)
 		"VerticalSplitterSize", ui->verticalSplitter->sizes());
 	ConfigManager::GetInstance().WriteList<int>(
 		"LevelSplitterSize", ui->levelSplitter->sizes());
-
 	QMainWindow::hideEvent(event);
 }
 
@@ -77,7 +75,6 @@ void MainWindow::InitUI()
 	setWindowTitle(u8"RepoReporter");
 	setWindowIcon(QIcon(":/image/logo.png"));
 
-
 	m_KeyShowWidget =
 		new QHotkey(Qt::Key_P, Qt::ShiftModifier | Qt::ControlModifier, true, this);
 	connect(m_KeyShowWidget, &QHotkey::activated,
@@ -97,7 +94,7 @@ void MainWindow::InitUI()
 void MainWindow::InitConnect()
 {
 	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
-	        this, &MainWindow::ChangeSelectPro);
+	        this, &MainWindow::ChangeRepo);
 
 	connect(ui->logTableView,    &LogTableView::SgnChangeSelectLog,
 	        ui->fileTableView, &FileTableView::ChangeLog);
@@ -126,16 +123,24 @@ void MainWindow::InitConnect()
 	        this, &MainWindow::RefreshRepoLog);
 }
 
-void MainWindow::ChangeSelectPro(const QString& path)
+void MainWindow::ChangeRepo(const QString& path)
 {
+	m_CurPaht = path;
+
 	ui->AllbranchCbox->setChecked(false);
-
 	ui->searchEdit->clear();
-	ui->fileTableView->ChangeProPath(path);
-	ui->logTableView->ChangeProPath(path, false);
 
-	QString branchName = VersionControlManager::GetCurrentBranch(path);
-	ui->branchBtn->setText(branchName);
+	QString version;
+	QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
+	QList<VCLogEntry> logs =
+		VersionControlManager::FetchLog(path, version, repoFileDictionary, false);
+
+	ui->fileTableView->ChangeRepo(path, repoFileDictionary);
+	ui->logTableView->ChangeRepo(logs, version);
+
+	ui->branchBtn->setText(VersionControlManager::GetCurrentBranch(path));
+	ui->branchBtn->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+	ui->AllbranchCbox->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
 }
 
 void MainWindow::UpdateStateLab(const int& index, const int& num)
@@ -181,16 +186,22 @@ void MainWindow::LogTableTextFilterChanged()
 void MainWindow::RefreshRepoLog()
 {
 	bool allBracch = ui->AllbranchCbox->isChecked();
-
 	ui->searchEdit->clear();
-	ui->logTableView->RefreshRepo(allBracch);
+	ui->logTableView->Clear();
+
+	QString version;
+	QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
+	QList<VCLogEntry> logs =
+		VersionControlManager::FetchLog(m_CurPaht, version, repoFileDictionary, allBracch);
+
+	ui->fileTableView->ChangeRepo(m_CurPaht, repoFileDictionary);
+	ui->logTableView->ChangeRepo(logs, version);
 
 	if (allBracch) {
 		ui->branchBtn->setText(u8"所有分支");
 	} else {
-		QString branchName =
-			VersionControlManager::GetCurrentBranch(
-				ui->logTableView->GetCurrentRepoPath());
-		ui->branchBtn->setText(branchName);
+		ui->branchBtn->setText(VersionControlManager::GetCurrentBranch(m_CurPaht));
 	}
+	ui->branchBtn->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+	ui->AllbranchCbox->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
 }

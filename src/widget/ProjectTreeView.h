@@ -31,7 +31,7 @@ private:
 	void InitUI();
 	void InitConnect();
 	void CheckRepoState();
-	QModelIndex GetSelectIndexs()const;
+	QModelIndex GetSelectIndex()const;
 
 private slots:
 

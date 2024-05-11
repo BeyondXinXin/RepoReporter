@@ -5,236 +5,226 @@
 #include <QTimeZone>
 #include <QDir>
 #include <QRegularExpression>
+#include <QTimer>
 #include <QStandardPaths>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QElapsedTimer>
+#include <QApplication>
+#include <regex>
 
 #include "FileUtil.h"
 
+RepoType VersionControlManager::CurrentRepoType = RepoType::Git;
+
+QString VersionControlManager::TortoiseGitPath = "C:\\Program Files\\TortoiseGit\\bin\\TortoiseGitProc.exe";
+QString VersionControlManager::TortoiseSvnPath = "C:\\Program Files\\TortoiseSVN\\bin\\TortoiseProc.exe";
+QString VersionControlManager::GitPath = "C:\\Program Files\\Git\\cmd\\git.exe";
+QString VersionControlManager::SvnPath = "C:\\Program Files\\TortoiseSVN\\bin\\svn.exe";
+
 bool VersionControlManager::VersionControlManager::CheckAndSetQuotepath()
 {
-	QProcess process;
-	process.setProgram("git");
 	QStringList args;
 	args << "config" << "--global" << "core.quotepath";
-	process.setArguments(args);
-	process.start();
-	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << "Failed to run git config command.";
-		return false;
-	}
+	QString outputStr;
 
-	QByteArray output = process.readAllStandardOutput();
-	QString    outputStr(output);
-	bool quotepath = outputStr.trimmed().toLower() == "true";
-
-	if (quotepath) {
-		QProcess setProcess;
-		setProcess.setProgram("git");
-		QStringList setArgs;
-		setArgs << "config" << "--global" << "core.quotepath" << "false";
-		setProcess.setArguments(setArgs);
-		setProcess.start();
-		if (!setProcess.waitForStarted() || !setProcess.waitForFinished()) {
-			qInfo() << "Failed to set core.quotepath to false.";
-			return false;
+	bool res = DoProcess(GitPath, args, "", outputStr);
+	if (res) {
+		if (outputStr.trimmed().toLower() == "true") {
+			args << "false";
+			res = DoProcess(GitPath, QStringList() << args, "", false);
 		}
 	}
+	return res;
+}
 
-	return true;
+void VersionControlManager::PullRepository(const QString& repoPath)
+{
+	if (RepoType::Git == CurrentRepoType) {
+		DoProcess(TortoiseGitPath, QStringList() << "/command:pull", repoPath);
+	} else if (RepoType::Svn == CurrentRepoType) {
+		DoProcess(TortoiseSvnPath, QStringList() << "/command:update" << "/path:''", repoPath);
+	}
+}
+
+void VersionControlManager::SyncRepository(const QString& repoPath)
+{
+	if (RepoType::Git == CurrentRepoType) {
+		DoProcess(TortoiseGitPath, QStringList() << "/command:sync", repoPath);
+	}
+}
+
+void VersionControlManager::CheckRepository(const QString& repoPath)
+{
+	if (RepoType::Git == CurrentRepoType) {
+		DoProcess(TortoiseGitPath, QStringList() << "/command:diff", repoPath);
+	} else if (RepoType::Svn == CurrentRepoType) {
+		DoProcess(TortoiseSvnPath, QStringList() << "/command:repostatus" << "/path:.", repoPath);
+	}
 }
 
 QList<VCLogEntry>VersionControlManager::FetchLog(
-	const QString& repoPath, QString& curVersion, bool allBranch)
+	const QString& repoPath,
+	QString& curVersion,
+	QHash<QString, QMap<QString, VCFileEntry> >& fileMaps,
+	bool allBranch)
 {
 	QList<VCLogEntry> logEntries;
+	curVersion.clear();
 
-	QProcess process;
-	process.setProgram("git");
-	QStringList args;
+	if (RepoType::Git == CurrentRepoType) {
+		QStringList args;
 
-	args << "log";
-	if (allBranch) {
-		args << "--all";
-	}
-	args << "--name-status"
-	     << "--pretty=format:%h|%B|%an|%ad|"
-	     << "--date=format-local:%c";
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.start();
+		args << "log" << "--name-status" << "--pretty=format:%h|%B|%an|%ad|" << "--date=format-local:%c";
+		if (allBranch) {
+			args << "--all";
+		}
+		QString outputStr;
+		if (!DoProcess(GitPath, args, repoPath, outputStr)) {
+			return logEntries;
+		}
+		QStringList    lines = outputStr.split("\n\n");
+		QList<QString> versions;
+		QHash<QString, VCLogEntry> logEntrieHash;
+		versions = AnalysisGitLogToLogEntry(lines, logEntrieHash, fileMaps);
 
-	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"运行 git log" << args << u8"命令时出错。";
-		return logEntries;
-	}
-
-	QString dataFormat = "ddd MMM d HH:mm:ss yyyy";
-	QString outputStr(process.readAllStandardOutput());
-	QStringList lines = outputStr.split("\n\n");
-
-	foreach(const QString& line, lines)
-	{
-		QStringList parts = line.split("|");
-		if (parts.size() != 5) {
-			continue;
+		args.clear();
+		args << "log" << "--numstat" << "--pretty=format:%h|%B|%an|%ad|";
+		if (allBranch) {
+			args << "--all";
+		}
+		outputStr;
+		if (DoProcess(GitPath, args, repoPath, outputStr)) {
+			lines = outputStr.split("\n\n");
+			AnalysisGitChangesToFileEntry(lines, logEntrieHash, fileMaps);
 		}
 
-		VCLogEntry entry;
-		entry.version = parts[0];
-		entry.message = parts[1];
-		if (!entry.message.isEmpty() &&
-		    (entry.message.endsWith('\n') || entry.message.endsWith('\r'))) {
-			entry.message.chop(1);
+		args.clear();
+		args << "log" << "-1" << "--pretty=format:%H";
+		if (DoProcess(GitPath, args, repoPath, outputStr)) {
+			curVersion = outputStr.split("\n").first();
 		}
-		entry.author = parts[2];
-		entry.date = QLocale::c().toDateTime(
-			parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
-		QStringList fileList = parts[4].split("\n");
-		foreach(QString file, fileList)
+
+		foreach(auto version, versions)
 		{
-			if (file.trimmed().startsWith('M')) {
-				entry.operations << FileOperation::Modify;
-			} else if (file.trimmed().startsWith('A')) {
-				entry.operations << FileOperation::Add;
-			} else if (file.trimmed().startsWith('D')) {
-				entry.operations << FileOperation::Delete;
-			} else if (file.trimmed().startsWith('R')) {
-				entry.operations << FileOperation::Rename;
+			logEntries << logEntrieHash.value(version);
+		}
+	} else if (RepoType::Svn == CurrentRepoType) {
+		QStringList args;
+		args << "info";
+		QHash<QString, QString> svnInfo;
+		QString outputStr;
+
+		if (DoProcess(SvnPath, args, repoPath, outputStr)) {
+			QStringList lines = outputStr.split("\r\n", QString::SkipEmptyParts);
+			for (QString line : lines) {
+				if (line.startsWith("Relative URL: ^")) {
+					svnInfo["RelativeURL"] = line.remove("Relative URL: ^") + "/";
+				} else if (line.startsWith("Last Changed Rev:")) {
+					svnInfo["LastChangedRev"] = line.section(' ', -1);
+				} else if (line.startsWith("URL:")) {
+					svnInfo["URL"] = line.section(' ', -1);
+				}
 			}
 		}
 
-		logEntries.append(entry);
-	}
+		args.clear();
+		args << "log" << "-l" << "100" << "-v" << svnInfo["URL"];
+		DoProcessLocal8Bit(SvnPath, args, repoPath, outputStr);
+		QStringList lines = outputStr.split(
+			"------------------------------------------------------------------------\r\n",
+			QString::SkipEmptyParts);
 
 
-	args.clear();
-	args << "log" << "-1" << "--pretty=format:%H";
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.start();
-
-	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"运行"
-		           " 'git log -1 --pretty=format:%H' "
-		           "命令时出错。";
-		curVersion = "";
-		return logEntries;
-	} else {
-		QByteArray  output = process.readAllStandardOutput();
-		QString     outputStr(output);
-		QStringList lines = outputStr.split("\n");
-		curVersion = lines.first();
+		logEntries = AnalysisSvnLogToLogEntry(lines, svnInfo["RelativeURL"], fileMaps);
+		curVersion = svnInfo["LastChangedRev"];
 	}
 
 	return logEntries;
 }
 
-#include <regex>
 QList<VCFileEntry>VersionControlManager::GetChangesForVersion(
 	const QString& repoPath, const QList<QString>& versions)
 {
 	QList<VCFileEntry> fileEntries;
 
-	QProcess process;
-
-	process.setProgram("git");
-	QStringList args;
-
-	args << "show" << "--pretty=format:%n" << "--numstat";
-	foreach(auto version, versions)
-	{
-		args << version;
-	}
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.start();
-
-	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"运行 git show 命令时出错。";
-		return fileEntries;
-	}
-
-	QByteArray  output = process.readAllStandardOutput();
-	QString     outputStr(output);
-	QStringList lines = outputStr.split("\n");
-	QMap<QString, VCFileEntry> fileMap;
-
-	foreach(QString line, lines)
-	{
-		if (line.isEmpty()) {
-			continue;
+	if (RepoType::Svn == CurrentRepoType) {
+		QStringList args;
+		args << "log" << "-v" << "-r";
+		if (1 == versions.size()) {
+			args << versions.first();
+		} else {
+			args << QString("%1:%2").arg(versions.last()).arg(versions.first());
 		}
-		QStringList parts = line.remove(" ").split(QRegExp("\\s+"));
-		if (parts.size() < 3) {
-			continue;
-		}
-		QString filePath = parts[2];
-		int     startIndex = filePath.indexOf('{');
-		if (startIndex != -1) {
-			int endIndex = filePath.indexOf('}', startIndex);
-			if (endIndex != -1) {
-				QString pattern = filePath.mid(startIndex, endIndex - startIndex + 1);
-				QStringList parts = pattern.mid(1, pattern.length() - 2).split("=>");
-				if (parts.size() == 2) {
-					filePath.replace(pattern, parts[1]);
+		QString outputStr;
+		DoProcessLocal8Bit(SvnPath, args, repoPath, outputStr);
+		QStringList lines = outputStr.split(
+			"------------------------------------------------------------------------\r\n",
+			QString::SkipEmptyParts);
+		args.clear();
+		args << "info";
+		QString relativeUrl;
+		if (DoProcess(SvnPath, args, repoPath, outputStr)) {
+			QStringList lines = outputStr.split("\r\n", QString::SkipEmptyParts);
+			for (QString line : lines) {
+				if (line.startsWith("Relative URL: ^")) {
+					relativeUrl = line.remove("Relative URL: ^") + "/";
+					break;
 				}
 			}
 		}
-		if (filePath.contains("{")) {}
-		VCFileEntry& entry = fileMap[filePath];
-
-		entry.addNum += parts[0].toInt();
-		entry.deleteNum += parts[1].toInt();
-		entry.filePath = filePath;
-
-		if ((entry.addNum > 0) && (entry.deleteNum > 0)) {
-			entry.operation = FileOperation::Modify;
-		} else if (entry.addNum > 0) {
-			entry.operation = FileOperation::Add;
-		} else if (entry.deleteNum > 0) {
-			entry.operation = FileOperation::Delete;
-		}
-		QFileInfo fileInfo(filePath);
-
-		entry.extensionName = fileInfo.suffix();
+		fileEntries = AnalysisSvnChangesToFileEntry(lines, relativeUrl);
 	}
 
-	return fileMap.values();
+
+	return fileEntries;
 }
 
 void VersionControlManager::ShowCompare(
 	const QString& repoPath, const QString& file,
 	const QString& startrev, const QString& endrev)
 {
-	QProcess process;
-	process.setProgram("TortoiseGitProc.exe");
-	QStringList args;
-	args << "/command:diff";
-	args << QString("/path:%1").arg(file);
-	args << QString("/startrev:%1~1").arg(startrev);
-	args << QString("/endrev:%1").arg(endrev);
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.startDetached();
+	if (RepoType::Git == CurrentRepoType) {
+		QStringList args;
+		args << "/command:diff"
+		     << QString("/path:%1").arg(file)
+		     << QString("/startrev:%1~1").arg(startrev)
+		     << QString("/endrev:%1").arg(endrev);
+		QString res;
+		DoProcess(TortoiseGitPath, args, repoPath, res);
+	} else if (RepoType::Svn == CurrentRepoType) {
+		QStringList args;
+		args << "/command:diff"
+		     << QString("/path:%1").arg(file)
+		     << QString("/startrev:%1").arg(startrev.toInt() - 1)
+		     << QString("/endrev:%1").arg(endrev);
+		DoProcess(TortoiseSvnPath, args, repoPath);
+	}
 }
 
-void VersionControlManager::ShowLog(const QString& repoPath, const QString& file)
+void VersionControlManager::ShowLog(
+	const QString& repoPath, const QString& file)
 {
-	QProcess process;
-	process.setProgram("TortoiseGitProc.exe");
-	QStringList args;
-	args << "/command:log";
-	if (!file.isEmpty()) {
-		args << QString("/path:%1").arg(file);
+	if (RepoType::Git == CurrentRepoType) {
+		QStringList args;
+		args << "/command:log";
+		if (!file.isEmpty()) {
+			args << QString("/path:%1").arg(file);
+		}
+		DoProcess(TortoiseGitPath, args, repoPath);
+	} else if (RepoType::Svn == CurrentRepoType) {
+		QStringList args;
+		args << "/command:log";
+		if (!file.isEmpty()) {
+			args << QString("/path:%1").arg(file);
+		}
+		DoProcess(TortoiseSvnPath, args, repoPath);
 	}
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.startDetached();
 }
 
 void VersionControlManager::OpenFile(
-	const QString& repoPath, const QString& file, const QString& revision)
+	const QString& repoPath, const QString& file,
+	const QString& revision)
 {
 	QString   configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 	QFileInfo outputInfo = QFileInfo(file);
@@ -245,22 +235,25 @@ void VersionControlManager::OpenFile(
 	                       .arg(outputInfo.completeSuffix());
 
 	FileUtil::DirMake(outputPath);
-
 	QProcess process;
-	process.setProgram("git");
 	QStringList args;
-	args << "show" << QString("%1:%2").arg(revision).arg(file);
+	if (RepoType::Git == CurrentRepoType) {
+		process.setProgram(GitPath);
+		args << "show" << QString("%1:%2").arg(revision).arg(file);
+	} else if (RepoType::Svn == CurrentRepoType) {
+		process.setProgram(SvnPath);
+		args << "cat" << "-r" << revision << file;
+	}
 	process.setArguments(args);
 	process.setWorkingDirectory(repoPath);
 	process.setStandardOutputFile(outputPath);
 	process.start();
 	process.waitForFinished(3000);
-
 	QUrl fileUrl = QUrl::fromLocalFile(outputPath);
 	QDesktopServices::openUrl(fileUrl);
 }
 
-void VersionControlManager::CompareFile(
+void VersionControlManager::CompareFiles(
 	const QString& repoPath,
 	const QString& file, const QString& revision,
 	const QString& markFile, const QString& markRrevision)
@@ -280,9 +273,14 @@ void VersionControlManager::CompareFile(
 		                       .arg(fileInfo.completeSuffix());
 
 		QProcess process;
-		process.setProgram("git");
 		QStringList args;
-		args << "show" << QString("%1:%2").arg(revisionList.at(i)).arg(fileList.at(i));
+		if (RepoType::Git == CurrentRepoType) {
+			process.setProgram(GitPath);
+			args << "show" << QString("%1:%2").arg(revisionList.at(i)).arg(fileList.at(i));
+		} else if (RepoType::Svn == CurrentRepoType) {
+			process.setProgram(SvnPath);
+			args << "cat" << "-r" << revisionList.at(i) << fileList.at(i);
+		}
 		process.setArguments(args);
 		process.setWorkingDirectory(repoPath);
 		process.setStandardOutputFile(outputPath);
@@ -293,7 +291,7 @@ void VersionControlManager::CompareFile(
 	}
 
 	QProcess process;
-	process.setProgram("TortoiseGitProc.exe");
+	process.setProgram(TortoiseGitPath);
 	QStringList args;
 	args << "/command:diff";
 	args << QString("/path:%1").arg(outFileList.at(0));
@@ -303,7 +301,8 @@ void VersionControlManager::CompareFile(
 	process.startDetached();
 }
 
-void VersionControlManager::OpenFileDirectory(const QString& repoPath, const QString& file)
+void VersionControlManager::OpenFileDirectory(
+	const QString& repoPath, const QString& file)
 {
 	QFileInfo fileInfo(repoPath + "/" + file);
 	QString   directory = fileInfo.absolutePath();
@@ -316,16 +315,20 @@ void VersionControlManager::ExportFile(
 {
 	QString lastFolderName = QDir(repoPath).dirName();
 	QString outputPath = QString("%1/%2/").arg(targetPath).arg(lastFolderName);
-
 	foreach(const QString& file, files)
 	{
 		QString outputFilePath = outputPath + file;
 		FileUtil::DirMake(outputFilePath);
 
 		QProcess process;
-		process.setProgram("git");
 		QStringList args;
-		args << "show" << QString("%1:%2").arg(revision).arg(file);
+		if (RepoType::Git == CurrentRepoType) {
+			process.setProgram(GitPath);
+			args << "show" << QString("%1:%2").arg(revision).arg(file);
+		} else if (RepoType::Svn == CurrentRepoType) {
+			process.setProgram(SvnPath);
+			args << "cat" << "-r" << revision << file;
+		}
 		process.setArguments(args);
 		process.setWorkingDirectory(repoPath);
 		process.setStandardOutputFile(outputFilePath);
@@ -334,106 +337,276 @@ void VersionControlManager::ExportFile(
 	}
 }
 
-QString VersionControlManager::GetCurrentBranch(const QString& repoPath)
+QString VersionControlManager::GetCurrentBranch(
+	const QString& repoPath)
 {
-	QProcess process;
-	process.setProgram("git");
-	QStringList args;
-	args << "rev-parse" << "--abbrev-ref" << "HEAD";
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.start();
-
-	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"获取当前分支名称时出错。";
-		return "";
+	if (RepoType::Git == CurrentRepoType) {
+		QStringList args;
+		args << "rev-parse" << "--abbrev-ref" << "HEAD";
+		QString res;
+		DoProcess(GitPath, args, repoPath, res);
+		return res;
 	}
-
-	QString branch = process.readAllStandardOutput().trimmed();
-	return branch;
+	return "";
 }
 
-QStringList VersionControlManager::GetAllBranches(const QString& repoPath)
+bool VersionControlManager::CheckUncommittedChanges(
+	const QString& repoPath, const RepoType& type)
 {
-	QProcess process;
-	process.setProgram("git");
-	QStringList args;
-	args << "branch" << "-a";
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.start();
-
-	if (!process.waitForStarted() || !process.waitForFinished()) {
-		qInfo() << u8"获取所有分支时出错。";
-		return QStringList();
-	}
-
-	QString output = process.readAllStandardOutput();
-	QStringList branches = output.split(QRegExp("[\\r\\n]+"), QString::SkipEmptyParts);
-
-	for (int i = 0; i < branches.size(); ++i) {
-		QString branch = branches.at(i).trimmed();
-
-		if (branch.startsWith('*')) {
-			branches[i] = branch.mid(2);
+	if (RepoType::Git == type) {
+		if (repoPath.isEmpty()) {
+			return false;
 		}
-
-		if (branch.startsWith("remotes/")) {
-			branches[i] = branch.mid(8);
+		QStringList args;
+		args << "diff" << "--quiet";
+		int exitCode;
+		DoProcess(GitPath, args, repoPath, exitCode);
+		return exitCode != 0;
+	} else if (RepoType::Svn == type) {
+		if (repoPath.isEmpty()) {
+			return false;
 		}
+		QStringList args;
+		args << "status";
+		QString output;
+		DoProcess(SvnPath, args, repoPath, output);
+		return !output.isEmpty();
 	}
-
-	return branches;
+	return false;
 }
 
-bool VersionControlManager::CheckUncommittedChanges(const QString& repoPath)
+bool VersionControlManager::DoProcess(
+	const QString& program, const QStringList& args,
+	const QString& path, const bool& detached)
 {
-	if (repoPath.isEmpty()) {
+	QProcess process;
+	process.setProgram(program);
+	process.setArguments(args);
+	process.setWorkingDirectory(path);
+	if (detached) {
+		process.startDetached();
+		return true;
+	}
+	process.start();
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << "Failed to run:" << program << args;
 		return false;
 	}
+	return true;
+}
 
+bool VersionControlManager::DoProcess(
+	const QString& program, const QStringList& args,
+	const QString& path, QString& res)
+{
 	QProcess process;
-	process.setProgram("git");
-	QStringList args;
-	args << "diff" << "--quiet";
+	process.setProgram(program);
 	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
+	process.setWorkingDirectory(path);
 	process.start();
-	process.waitForFinished();
-	bool res = process.exitCode() != 0;
-
-	return res;
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << "Failed to run:" << program << args;
+		return false;
+	}
+	QByteArray output = process.readAllStandardOutput();
+	res = QString::fromUtf8(output);
+	return true;
 }
 
-void VersionControlManager::RepoPull(const QString& repoPath)
+bool VersionControlManager::DoProcessLocal8Bit(
+	const QString& program, const QStringList& args,
+	const QString& path, QString& res)
 {
 	QProcess process;
-	process.setProgram("TortoiseGitProc.exe");
-	QStringList args;
-	args << "/command:pull";
+	process.setProgram(program);
 	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.startDetached();
+	process.setWorkingDirectory(path);
+	process.start();
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << "Failed to run:" << program << args;
+		return false;
+	}
+	QByteArray output = process.readAllStandardOutput();
+	res = QString::fromLocal8Bit(output);
+	return true;
 }
 
-void VersionControlManager::RepoSync(const QString& repoPath)
+bool VersionControlManager::DoProcess(
+	const QString& program, const QStringList& args,
+	const QString& path, int& exitCode)
 {
 	QProcess process;
-	process.setProgram("TortoiseGitProc.exe");
-	QStringList args;
-	args << "/command:sync";
+	process.setProgram(program);
 	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.startDetached();
+	process.setWorkingDirectory(path);
+	process.start();
+	if (!process.waitForStarted() || !process.waitForFinished()) {
+		qInfo() << "Failed to run:" << program << args;
+		return false;
+	}
+	exitCode = process.exitCode();
+	return true;
 }
 
-void VersionControlManager::RepoCheck(const QString& repoPath)
+QList<QString>VersionControlManager::AnalysisGitLogToLogEntry(
+	const QStringList& lines,
+	QHash<QString, VCLogEntry>& logEntries,
+	QHash<QString, QMap<QString, VCFileEntry> >& fileMaps)
 {
-	QProcess process;
-	process.setProgram("TortoiseGitProc.exe");
-	QStringList args;
-	args << "/command:diff";
-	process.setArguments(args);
-	process.setWorkingDirectory(repoPath);
-	process.startDetached();
+	QList<QString> versions;
+	QString dataFormat = "ddd MMM d HH:mm:ss yyyy";
+
+	foreach(const QString& line, lines)
+	{
+		QStringList parts = line.split("|");
+		if (parts.size() != 5) {
+			continue;
+		}
+		QString version = parts[0];
+		versions << version;
+
+		VCLogEntry& entry = logEntries[version];
+		entry.version = version;
+		entry.message = parts[1];
+		if (!entry.message.isEmpty() &&
+		    (entry.message.endsWith('\n') || entry.message.endsWith('\r'))) {
+			entry.message.chop(1);
+		}
+		entry.author = parts[2];
+		entry.date = QLocale::c().toDateTime(
+			parts[3].replace(QRegularExpression("\\s+"), " "), dataFormat);
+		QStringList fileList = parts[4].split("\n", QString::SkipEmptyParts);
+
+		foreach(QString file, fileList)
+		{
+			VCFileEntry fileEntry;
+			QStringList tmp = file.split("\t");
+			QString     operation = tmp[0].trimmed();
+			QString     filePath = tmp.at(1);
+			fileEntry.extensionName = QFileInfo(tmp.at(1)).suffix();
+			fileEntry.filePath = filePath;
+			if (operation.startsWith('M')) {
+				fileEntry.operation = FileOperation::Modify;
+				entry.operations << FileOperation::Modify;
+			} else if (operation.startsWith('A')) {
+				fileEntry.operation = FileOperation::Add;
+				entry.operations << FileOperation::Add;
+			} else if (operation.startsWith('D')) {
+				fileEntry.operation = FileOperation::Delete;
+				entry.operations << FileOperation::Delete;
+			} else if (operation.startsWith('R')) {
+				fileEntry.operation = FileOperation::Rename;
+				entry.operations << FileOperation::Rename;
+			}
+			fileMaps[version][filePath] = fileEntry;
+		}
+	}
+
+	return versions;
+}
+
+void VersionControlManager::AnalysisGitChangesToFileEntry(
+	const QStringList& lines,
+	QHash<QString, VCLogEntry>& logEntries,
+	QHash<QString, QMap<QString, VCFileEntry> >& fileMaps)
+{
+	foreach(QString line, lines)
+	{
+		QStringList parts = line.split("|");
+		if (parts.size() != 5) {
+			continue;
+		}
+		QString version = parts[0];
+		VCLogEntry& entry = logEntries[version];
+		QMap<QString, VCFileEntry>& fileMap = fileMaps[version];
+		QStringList fileList = parts[4].split("\n", QString::SkipEmptyParts);
+
+		foreach(QString file, fileList)
+		{
+			QStringList  tmp = file.split(QRegExp("\\s+"));
+			QString      filePath = tmp.at(2);
+			VCFileEntry& fileEntry = fileMap[filePath];
+			fileEntry.addNum += tmp[0].toInt();
+			fileEntry.deleteNum += tmp[1].toInt();
+		}
+	}
+}
+
+QList<VCLogEntry>VersionControlManager::AnalysisSvnLogToLogEntry(
+	const QStringList& lines,
+	const QString& relativeUrl,
+	QHash<QString, QMap<QString, VCFileEntry> >& fileMaps)
+{
+	QList<VCLogEntry> logEntries;
+	QString dataFormat = "yyyy-MM-dd hh:mm:ss ";
+	foreach(QString line, lines)
+	{
+		VCLogEntry  logEntry;
+		QStringList fields = line.split(" | ");
+		logEntry.version = fields[0].remove("r");
+		logEntry.author = fields.at(1);
+		logEntry.date = QLocale::c().toDateTime(fields[2].split("+").first(), dataFormat);
+
+		QStringList strs = fields[3].split("\r\n\r\n");
+		logEntry.message = strs.at(1);
+		QStringList files = strs[0].split("Changed paths:\r\n")[1].split("\r\n");
+		foreach(QString file, files)
+		{
+			QStringList  tmpList = file.trimmed().split(" ");
+			QString      filePath = tmpList[1].remove(relativeUrl);
+			QString      fileOperation = tmpList.at(0);
+			VCFileEntry& fileEntry = fileMaps[logEntry.version][filePath];
+			fileEntry.filePath = filePath;
+			if (fileOperation.startsWith('M')) {
+				fileEntry.operation = FileOperation::Modify;
+				logEntry.operations << FileOperation::Modify;
+			} else if (fileOperation.startsWith('A')) {
+				fileEntry.operation = FileOperation::Add;
+				logEntry.operations << FileOperation::Add;
+			} else if (fileOperation.startsWith('D')) {
+				fileEntry.operation = FileOperation::Delete;
+				logEntry.operations << FileOperation::Delete;
+			} else if (fileOperation.startsWith('R')) {
+				fileEntry.operation = FileOperation::Rename;
+				logEntry.operations << FileOperation::Rename;
+			}
+			QFileInfo fileInfo(filePath);
+			fileEntry.extensionName = fileInfo.suffix();
+		}
+		logEntries << logEntry;
+	}
+	return logEntries;
+}
+
+QList<VCFileEntry>VersionControlManager::AnalysisSvnChangesToFileEntry(
+	const QStringList& lines, const QString& relativeUrl)
+{
+	QMap<QString, VCFileEntry> fileMap;
+	foreach(QString line, lines)
+	{
+		QStringList fields = line.split(" | ");
+		QStringList strs = fields[3].split("\r\n\r\n");
+		QStringList files = strs[0].split("Changed paths:\r\n")[1].split("\r\n");
+		foreach(QString file, files)
+		{
+			QStringList  tmpList = file.trimmed().split(" ");
+			QString      filePath = tmpList[1].remove(relativeUrl);
+			QString      fileOperation = tmpList.at(0);
+			VCFileEntry& entry = fileMap[filePath];
+			entry.filePath = filePath;
+			if (fileOperation.startsWith('M')) {
+				entry.operation = FileOperation::Modify;
+			} else if (fileOperation.startsWith('A')) {
+				entry.operation = FileOperation::Add;
+			} else if (fileOperation.startsWith('D')) {
+				entry.operation = FileOperation::Delete;
+			} else if (fileOperation.startsWith('R')) {
+				entry.operation = FileOperation::Rename;
+			}
+			QFileInfo fileInfo(filePath);
+			entry.extensionName = fileInfo.suffix();
+		}
+	}
+
+	return fileMap.values();
 }

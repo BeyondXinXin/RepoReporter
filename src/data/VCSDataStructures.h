@@ -7,12 +7,6 @@
 #include <QDateTime>
 #include <QColor>
 
-/*
- * FileOperation
- * VCLogEntry
- * VCProjectPath
- */
-
 static const QColor AddColor(128, 0, 128);   // 紫色
 static const QColor ModifyColor(0, 50, 177); // 深蓝色
 static const QColor DeleteColor(100, 0, 58); // 暗红色
@@ -20,14 +14,14 @@ static const QColor RenameColor(0, 0, 255);  // 蓝色
 
 static const QColor RepoUnsubmittedColor(150, 0, 85);
 
-// --------------------- RepoState ---------------------
+
 enum class RepoState {
 	Normal      = 0,
 	Unsubmitted = 1,
 };
 Q_DECLARE_METATYPE(RepoState)
 
-// --------------------- RepoType ---------------------
+
 enum class RepoType {
 	Unknown = 0,
 	Git     = 1,
@@ -35,7 +29,6 @@ enum class RepoType {
 };
 Q_DECLARE_METATYPE(RepoType)
 
-// --------------------- FileOperation ---------------------
 
 enum class FileOperation {
 	Add,
@@ -44,6 +37,38 @@ enum class FileOperation {
 	Rename
 };
 Q_DECLARE_METATYPE(FileOperation)
+
+struct VCFileEntry {
+	QString filePath;
+	QString extensionName;
+	int addNum = 0;
+	int deleteNum = 0;
+	FileOperation operation;
+
+	friend QDebug operator<<(QDebug dbg, const VCFileEntry& entry);
+};
+
+struct VCLogEntry {
+	QString version;
+	QSet<FileOperation>operations;
+	QString message;
+	QString author;
+	QDateTime date;
+	friend QDebug operator<<(QDebug dbg, const VCLogEntry& entry);
+};
+
+struct VCRepoEntry {
+	QString name;
+	QString path;
+
+	RepoType type = RepoType::Unknown;
+	RepoState state = RepoState::Normal;
+
+	VCRepoEntry(const QString& newName, const QString& newPath = "");
+	VCRepoEntry(const VCRepoEntry& other);
+
+	friend QDebug operator<<(QDebug dbg, const VCRepoEntry& path);
+};
 
 inline QString FileOperationToString(FileOperation operation)
 {
@@ -80,18 +105,6 @@ inline uint qHash(FileOperation key, uint seed = 0) noexcept
 	return ::qHash(static_cast<int>(key), seed);
 }
 
-// --------------------- VCFileEntry ---------------------
-
-struct VCFileEntry {
-	QString filePath;
-	QString extensionName;
-	int addNum;
-	int deleteNum;
-	FileOperation operation;
-
-	friend QDebug operator<<(QDebug dbg, const VCFileEntry& entry);
-};
-
 inline QDebug operator<<(QDebug dbg, const VCFileEntry& entry)
 {
 	dbg << "VCFileEntry("
@@ -102,18 +115,6 @@ inline QDebug operator<<(QDebug dbg, const VCFileEntry& entry)
 	    << "operation:" << FileOperationToString(entry.operation) << ")";
 	return dbg;
 }
-
-// --------------------- VCLogEntry ---------------------
-
-struct VCLogEntry {
-	QString version;
-	QSet<FileOperation>operations;
-	QString message;
-	QString author;
-	QDateTime date;
-
-	friend QDebug operator<<(QDebug dbg, const VCLogEntry& entry);
-};
 
 inline QDebug operator<<(QDebug dbg, const VCLogEntry& entry)
 {
@@ -127,22 +128,9 @@ inline QDebug operator<<(QDebug dbg, const VCLogEntry& entry)
 	dbg << "], "
 	    << "Message:" << entry.message << ", "
 	    << "Author:" << entry.author << ", "
-	    << "Date:" << entry.date.toString("yyyy/M/d hh:mm:ss") << ")";
+	    << "Date:" << entry.date.toString("yyyy/M/d hh:mm:ss");
 	return dbg;
 }
-
-// --------------------- VCProjectPath ---------------------
-
-struct VCRepoEntry {
-	QString name;
-	QString path;
-	RepoType type = RepoType::Unknown;
-	RepoState state = RepoState::Normal;
-
-	VCRepoEntry(const QString& newName, const QString& newPath = "");
-	VCRepoEntry(const VCRepoEntry& other);
-	friend QDebug operator<<(QDebug dbg, const VCRepoEntry& path);
-};
 
 inline VCRepoEntry::VCRepoEntry(const QString& newName, const QString& newPath)
 	: name(newName), path(newPath)
@@ -164,4 +152,4 @@ inline QDebug operator<<(QDebug dbg, const VCRepoEntry& path)
 	return dbg.space();
 }
 
-#endif // ifndef VCSDataStructures_H
+#endif // ifn

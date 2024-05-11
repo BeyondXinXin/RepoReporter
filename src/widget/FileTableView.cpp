@@ -28,13 +28,41 @@ FileTableView::FileTableView(QWidget* parent)
 
 void FileTableView::ChangeLog(const QList<QString>& versions)
 {
-	m_Model->UpdataFile(m_CurPaht, versions);
+	if (VersionControlManager::CurrentRepoType == RepoType::Svn) {
+		hideColumn(3);
+		hideColumn(4);
+	} else {
+		showColumn(3);
+		showColumn(4);
+		QHeaderView* header = horizontalHeader();
+		header->resizeSection(3, 55);
+		header->resizeSection(4, 55);
+	}
+
+	QMap<QString, VCFileEntry> fileMaps;
+	foreach(QString version, versions)
+	{
+		QMap<QString, VCFileEntry>& fileEntrys = m_RepoFileDictionary[version];
+		foreach(VCFileEntry fileEntry, fileEntrys.values())
+		{
+			if (fileMaps.contains(fileEntry.filePath)) {
+				fileMaps[fileEntry.filePath].addNum += fileEntry.addNum;
+				fileMaps[fileEntry.filePath].deleteNum += fileEntry.deleteNum;
+			} else {
+				fileMaps[fileEntry.filePath] = fileEntry;
+			}
+		}
+	}
+	m_Model->Update(fileMaps.values());
 	m_CurVersions = versions;
 }
 
-void FileTableView::ChangeProPath(const QString& path)
+void FileTableView::ChangeRepo(
+	const QString& path,
+	QHash<QString, QMap<QString, VCFileEntry> >repoFileDictionary)
 {
 	m_CurPaht = path;
+	m_RepoFileDictionary = repoFileDictionary;
 }
 
 void FileTableView::contextMenuEvent(QContextMenuEvent* event)
@@ -70,12 +98,11 @@ void FileTableView::showEvent(QShowEvent* event)
 	QTableView::showEvent(event);
 	QHeaderView* header = horizontalHeader();
 	int column = m_Model->columnCount();
-	QList<int> sizeList = ConfigManager::GetInstance().ReadList<int>("FileTableViewSectionSize", QList<int>{});
+	QList<int> sizeList =
+		ConfigManager::GetInstance().ReadList<int>("FileTableViewSectionSize", QList<int>{});
 
-	if (sizeList.size() == column) {
-		for (int i = 0; i < column; i++) {
-			header->resizeSection(i, sizeList.at(i));
-		}
+	for (int i = 0; i < column; i++) {
+		header->resizeSection(i, sizeList.at(i));
 	}
 }
 
@@ -230,7 +257,7 @@ void FileTableView::OnCompareAction()
 	QString CompareFile = m_Model->GetFileName(GetSelectIndexs().at(0));
 	QString CompareVersion = m_CurVersions.first();
 	if (!CompareFile.isEmpty() && !m_MarkCompareFile.isEmpty()) {
-		VersionControlManager::CompareFile(
+		VersionControlManager::CompareFiles(
 			m_CurPaht, CompareFile, CompareVersion, m_MarkCompareFile, m_MarkCompareVersion);
 	}
 }

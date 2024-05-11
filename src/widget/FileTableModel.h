@@ -15,7 +15,7 @@ public:
 	explicit FileTableModel(QObject* parent = nullptr);
 	~FileTableModel() override;
 
-	void UpdataFile(const QString& path, const QList<QString>& versions);
+	void Update(const QList<VCFileEntry>& files);
 
 	QString GetFileName(const QModelIndex& index)const;
 

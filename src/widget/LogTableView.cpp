@@ -6,6 +6,7 @@
 #include <QContextMenuEvent>
 #include <QGuiApplication>
 #include <QClipboard>
+#include <QTimer>
 
 #include "LogTableModel.h"
 #include "utils/VersionControlManager.h"
@@ -28,27 +29,12 @@ LogTableView::LogTableView(QWidget* parent)
 	InitConnect();
 }
 
-void LogTableView::ChangeProPath(const QString& path, const bool& allBranch)
+void LogTableView::ChangeRepo(const QList<VCLogEntry>& logs, const QString& version)
 {
-	m_CurPaht = path;
-	m_Model->UpdataLog(path, allBranch);
+	m_Model->Update(logs, version);
 	emit SgnStateLabChange(-1, 0);
 	emit SgnStateLabChange(0, m_Model->rowCount());
 
-	setCurrentIndex(model()->index(0, 0));
-}
-
-void LogTableView::RefreshRepo(const bool& allBranch)
-{
-	m_Model->UpdataLog("", allBranch);
-	emit SgnChangeSelectLog(QStringList());
-	emit SgnUpdateDescription("");
-
-	QCoreApplication::processEvents();
-
-	m_Model->UpdataLog(m_CurPaht, allBranch);
-	emit SgnStateLabChange(-1, 0);
-	emit SgnStateLabChange(0, m_Model->rowCount());
 	setCurrentIndex(model()->index(0, 0));
 }
 
@@ -58,9 +44,12 @@ void LogTableView::setFilterRegExp(const QRegExp& regExp, QList<int>filterItems)
 	m_FilterProxyModel->setFilterRegExp(regExp);
 }
 
-QString LogTableView::GetCurrentRepoPath() const
+void LogTableView::Clear()
 {
-	return m_CurPaht;
+	m_Model->Clear();
+	emit SgnChangeSelectLog(QStringList());
+	emit SgnUpdateDescription("");
+	QCoreApplication::processEvents();
 }
 
 void LogTableView::contextMenuEvent(QContextMenuEvent* event)

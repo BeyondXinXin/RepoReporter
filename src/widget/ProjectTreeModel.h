@@ -30,7 +30,7 @@ public:
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	QString GetIndexPath(const QModelIndex& index)const;
-	VCRepoEntry GetIndexProjectPath(const QModelIndex& index)const;
+	VCRepoEntry GetIndexEntry(const QModelIndex& index)const;
 
 	void ClearData();
 	void CheckAllRepoState();

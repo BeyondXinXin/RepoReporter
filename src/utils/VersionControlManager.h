@@ -8,10 +8,19 @@
 class VersionControlManager {
 public:
 
-	static bool VersionControlManager::CheckAndSetQuotepath();
+	static bool CheckAndSetQuotepath();
+
+	static void PullRepository(const QString& repoPath);
+
+	static void SyncRepository(const QString& repoPath);
+
+	static void CheckRepository(const QString& repoPath);
 
 	static QList<VCLogEntry>FetchLog(
-		const QString& repoPath, QString& curVersion, bool allBranch = false);
+		const QString& repoPath,
+		QString& curVersion,
+		QHash<QString, QMap<QString, VCFileEntry> >& fileMaps,
+		bool allBranch = false);
 
 	static QList<VCFileEntry>GetChangesForVersion(
 		const QString& repoPath, const QList<QString>& versions);
@@ -20,12 +29,13 @@ public:
 		const QString& repoPath, const QString& file,
 		const QString& startrev, const QString& endrev);
 
-	static void ShowLog(const QString& repoPath, const QString& file);
+	static void ShowLog(
+		const QString& repoPath, const QString& file);
 
 	static void OpenFile(
 		const QString& repoPath, const QString& file, const QString& revision);
 
-	static void CompareFile(
+	static void CompareFiles(
 		const QString& repoPath,
 		const QString& file, const QString& revision,
 		const QString& markFile, const QString& markRrevision);
@@ -39,15 +49,49 @@ public:
 
 	static QString GetCurrentBranch(const QString& repoPath);
 
-	static QStringList GetAllBranches(const QString& repoPath);
+	static bool CheckUncommittedChanges(const QString& repoPath, const RepoType& type);
 
-	static bool CheckUncommittedChanges(const QString& repoPath);
+private:
 
-	static void RepoPull(const QString& repoPath);
+	static bool DoProcess(const QString& program, const QStringList& args,
+	                      const QString& path, const bool& detached = true);
 
-	static void RepoSync(const QString& repoPath);
+	static bool DoProcess(const QString& program, const QStringList& args,
+	                      const QString& path, QString& res);
 
-	static void RepoCheck(const QString& repoPath);
+	static bool DoProcessLocal8Bit(const QString& program, const QStringList& args,
+	                               const QString& path, QString& res);
+
+	static bool DoProcess(const QString& program, const QStringList& args,
+	                      const QString& path, int& exitCode);
+
+	static QList<QString>AnalysisGitLogToLogEntry(
+		const QStringList& lines,
+		QHash<QString, VCLogEntry>& logEntries,
+		QHash<QString, QMap<QString, VCFileEntry> >& fileMaps);
+
+	static void AnalysisGitChangesToFileEntry(
+		const QStringList& lines,
+		QHash<QString, VCLogEntry>& logEntries,
+		QHash<QString, QMap<QString, VCFileEntry> >& fileMaps);
+
+	static QList<VCLogEntry>AnalysisSvnLogToLogEntry(
+		const QStringList& lines, const QString& relativeUrl,
+		QHash<QString, QMap<QString, VCFileEntry> >& fileMaps);
+
+	static QList<VCFileEntry>AnalysisSvnChangesToFileEntry(
+		const QStringList& lines, const QString& relativeUrl);
+
+public:
+
+	static RepoType CurrentRepoType;
+
+private:
+
+	static QString TortoiseGitPath;
+	static QString TortoiseSvnPath;
+	static QString GitPath;
+	static QString SvnPath;
 };
 
 #endif // VERSIONCONTROLMANAGER_H
