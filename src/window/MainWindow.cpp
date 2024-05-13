@@ -130,17 +130,24 @@ void MainWindow::ChangeRepo(const QString& path)
 	ui->AllbranchCbox->setChecked(false);
 	ui->searchEdit->clear();
 
-	QString version;
-	QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
-	QList<VCLogEntry> logs =
-		VersionControlManager::FetchLog(path, version, repoFileDictionary, false);
+	if (m_CurPaht.isEmpty()) {
+		ui->logTableView->Clear();
+		ui->branchBtn->setText("");
+		ui->branchBtn->setVisible(false);
+		ui->AllbranchCbox->setVisible(false);
+	} else {
+		QString version;
+		QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
+		QList<VCLogEntry> logs =
+			VersionControlManager::FetchLog(path, version, repoFileDictionary, false);
 
-	ui->fileTableView->ChangeRepo(path, repoFileDictionary);
-	ui->logTableView->ChangeRepo(logs, version);
+		ui->fileTableView->ChangeRepo(path, repoFileDictionary);
+		ui->logTableView->ChangeRepo(logs, version);
 
-	ui->branchBtn->setText(VersionControlManager::GetCurrentBranch(path));
-	ui->branchBtn->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
-	ui->AllbranchCbox->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+		ui->branchBtn->setText(VersionControlManager::GetCurrentBranch(path));
+		ui->branchBtn->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+		ui->AllbranchCbox->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+	}
 }
 
 void MainWindow::UpdateStateLab(const int& index, const int& num)
@@ -188,7 +195,7 @@ void MainWindow::RefreshRepoLog()
 	bool allBracch = ui->AllbranchCbox->isChecked();
 	ui->searchEdit->clear();
 	ui->logTableView->Clear();
-
+	QCoreApplication::processEvents();
 	QString version;
 	QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
 	QList<VCLogEntry> logs =

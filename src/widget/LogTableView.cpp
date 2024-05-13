@@ -34,7 +34,6 @@ void LogTableView::ChangeRepo(const QList<VCLogEntry>& logs, const QString& vers
 	m_Model->Update(logs, version);
 	emit SgnStateLabChange(-1, 0);
 	emit SgnStateLabChange(0, m_Model->rowCount());
-
 	setCurrentIndex(model()->index(0, 0));
 }
 
@@ -47,9 +46,9 @@ void LogTableView::setFilterRegExp(const QRegExp& regExp, QList<int>filterItems)
 void LogTableView::Clear()
 {
 	m_Model->Clear();
+	emit SgnStateLabChange(-1, 0);
 	emit SgnChangeSelectLog(QStringList());
 	emit SgnUpdateDescription("");
-	QCoreApplication::processEvents();
 }
 
 void LogTableView::contextMenuEvent(QContextMenuEvent* event)
