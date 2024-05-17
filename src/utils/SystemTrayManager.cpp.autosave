@@ -17,7 +17,7 @@ SystemTrayManager * SystemTrayManager::Instance()
 		QMutexLocker  locker(&mutex);
 		m_Self = new SystemTrayManager();
 	}
-
+	
 	return m_Self;
 }
 
@@ -25,24 +25,24 @@ SystemTrayManager::SystemTrayManager(QObject* parent) : QSystemTrayIcon(parent)
 {
 	m_MainWidget = 0;
 	m_Mmenu = new QMenu;
-
+	
 	connect(this, &SystemTrayManager::activated,
-	        this, &SystemTrayManager::SlotIconIsActived);
-
+			this, &SystemTrayManager::SlotIconIsActived);
+	
 	setIcon(QIcon(":/image/logo.png"));
 }
 
 void SystemTrayManager::SlotIconIsActived(QSystemTrayIcon::ActivationReason reason)
 {
 	switch (reason) {
-	case QSystemTrayIcon::Trigger:
-	case QSystemTrayIcon::DoubleClick: {
-		OnShowMainWidget();
-		break;
-	}
-
-	default:
-		break;
+		case QSystemTrayIcon::Trigger:
+		case QSystemTrayIcon::DoubleClick: {
+				OnShowMainWidget();
+				break;
+			}
+			
+		default:
+			break;
 	}
 }
 
@@ -79,7 +79,7 @@ void SystemTrayManager::OnShowSettings()
 	if (!m_SettingsWid) {
 		m_SettingsWid = new SettingsDialog();
 	}
-
+	
 	m_SettingsWid->showNormal();
 	m_SettingsWid->activateWindow();
 }

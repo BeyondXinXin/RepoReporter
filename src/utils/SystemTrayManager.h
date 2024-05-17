@@ -22,6 +22,7 @@ public Q_SLOTS:
 
 	void OnCloseAll();
 	void OnShowMainWidget();
+	void OnShowSettings();
 
 Q_SIGNALS:
 
@@ -39,7 +40,9 @@ private:
 
 	static SystemTrayManager* m_Self;
 
-	QWidget* m_MainWidget;
+	QWidget* m_MainWidget { nullptr };
+	QWidget* m_SettingsWid{ nullptr };
+
 	QMenu* m_Mmenu;
 };
 

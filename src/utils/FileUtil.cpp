@@ -119,12 +119,12 @@ QString FileUtil::GetFullAbsolutePath(const QString& path)
 
 QString FileUtil::SelectDirectory(QString defaultDir)
 {
-	return QFileDialog::getExistingDirectory(nullptr, "选择文件夹", defaultDir);
+	return QFileDialog::getExistingDirectory(nullptr, u8"选择文件夹", defaultDir);
 }
 
 QString FileUtil::SelectFile(const QString& filter, QString defaultDir)
 {
-	return QFileDialog::getOpenFileName(nullptr, "选择文件", defaultDir, filter);
+	return QFileDialog::getOpenFileName(nullptr, u8"选择文件", defaultDir, filter);
 }
 
 void FileUtil::OpenDirectoryInExplorer(const QString& path)

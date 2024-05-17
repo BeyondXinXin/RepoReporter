@@ -125,7 +125,6 @@ QVariant LogTableModel::data(const QModelIndex& index, int role) const
 		return operationStrings;
 	}
 
-
 	return QVariant();
 }
 

@@ -1,4 +1,4 @@
-﻿#include "mainwindow.h"
+﻿#include "MainWindow.h"
 #include "./ui_mainwindow.h"
 
 #include <QDebug>
@@ -9,6 +9,7 @@
 #include "utils/ConfigManager.h"
 #include "utils/SystemTrayManager.h"
 #include "utils/VersionControlManager.h"
+#include "utils/FileUtil.h"
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -17,10 +18,27 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->setupUi(this);
 	InitUI();
 	InitConnect();
-
 	SystemTrayManager::Instance()->setMainWidget(this);
 	VersionControlManager::CheckAndSetQuotepath();
 	qInfo() << u8"软件启动。";
+
+	QString path;
+	path = ConfigManager::GetInstance().ReadValue("TortoiseGitPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::TortoiseGitPath = path;
+	}
+	path = ConfigManager::GetInstance().ReadValue("TortoiseSvnPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::TortoiseSvnPath = path;
+	}
+	path = ConfigManager::GetInstance().ReadValue("GitPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::GitPath = path;
+	}
+	path = ConfigManager::GetInstance().ReadValue("SvnPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::SvnPath = path;
+	}
 }
 
 MainWindow::~MainWindow()
@@ -32,6 +50,18 @@ MainWindow::~MainWindow()
 	} else {
 		ConfigManager::GetInstance().WriteValue("LastNormalWindowGeometry", geometry());
 	}
+
+	ConfigManager::GetInstance().WriteValue(
+		"TortoiseGitPath", VersionControlManager::TortoiseGitPath);
+	ConfigManager::GetInstance().WriteValue(
+		"TortoiseSvnPath", VersionControlManager::TortoiseSvnPath);
+	ConfigManager::GetInstance().WriteValue(
+		"GitPath", VersionControlManager::GitPath);
+	ConfigManager::GetInstance().WriteValue(
+		"SvnPath", VersionControlManager::SvnPath);
+	
+	SystemTrayManager::Instance()->hide();
+	SystemTrayManager::Instance()->deleteLater();
 
 	delete ui;
 }
@@ -55,6 +85,11 @@ void MainWindow::hideEvent(QHideEvent* event)
 	ConfigManager::GetInstance().WriteList<int>(
 		"LevelSplitterSize", ui->levelSplitter->sizes());
 	QMainWindow::hideEvent(event);
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+	QMainWindow::closeEvent(event);
 }
 
 void MainWindow::InitUI()
@@ -130,17 +165,24 @@ void MainWindow::ChangeRepo(const QString& path)
 	ui->AllbranchCbox->setChecked(false);
 	ui->searchEdit->clear();
 
-	QString version;
-	QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
-	QList<VCLogEntry> logs =
-		VersionControlManager::FetchLog(path, version, repoFileDictionary, false);
+	if (m_CurPaht.isEmpty()) {
+		ui->logTableView->Clear();
+		ui->branchBtn->setText("");
+		ui->branchBtn->setVisible(false);
+		ui->AllbranchCbox->setVisible(false);
+	} else {
+		QString version;
+		QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
+		QList<VCLogEntry> logs =
+			VersionControlManager::FetchLog(path, version, repoFileDictionary, false);
 
-	ui->fileTableView->ChangeRepo(path, repoFileDictionary);
-	ui->logTableView->ChangeRepo(logs, version);
+		ui->fileTableView->ChangeRepo(path, repoFileDictionary);
+		ui->logTableView->ChangeRepo(logs, version);
 
-	ui->branchBtn->setText(VersionControlManager::GetCurrentBranch(path));
-	ui->branchBtn->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
-	ui->AllbranchCbox->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+		ui->branchBtn->setText(VersionControlManager::GetCurrentBranch(path));
+		ui->branchBtn->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+		ui->AllbranchCbox->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+	}
 }
 
 void MainWindow::UpdateStateLab(const int& index, const int& num)
@@ -188,7 +230,7 @@ void MainWindow::RefreshRepoLog()
 	bool allBracch = ui->AllbranchCbox->isChecked();
 	ui->searchEdit->clear();
 	ui->logTableView->Clear();
-
+	QCoreApplication::processEvents();
 	QString version;
 	QHash<QString, QMap<QString, VCFileEntry> > repoFileDictionary;
 	QList<VCLogEntry> logs =

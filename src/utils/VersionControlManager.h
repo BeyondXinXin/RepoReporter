@@ -85,9 +85,6 @@ private:
 public:
 
 	static RepoType CurrentRepoType;
-
-private:
-
 	static QString TortoiseGitPath;
 	static QString TortoiseSvnPath;
 	static QString GitPath;
