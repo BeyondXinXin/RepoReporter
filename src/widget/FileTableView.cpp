@@ -13,6 +13,7 @@
 #include "utils/ConfigManager.h"
 #include "utils/VersionControlManager.h"
 #include "utils/FileUtil.h"
+#include "utils/ProxyStyle.h"
 
 FileTableView::FileTableView(QWidget* parent)
 	: QTableView(parent)
@@ -181,6 +182,7 @@ void FileTableView::InitConnect()
 	m_CopySubMenu->addAction(m_CopyFullPathAction);
 	m_CopySubMenu->addAction(m_CopyRelativePathAction);
 	m_CopySubMenu->addAction(m_CopyFileNameAction);
+	m_CopySubMenu->setStyle(new NoIconStyle());
 
 	m_CompareAction->setEnabled(false);
 

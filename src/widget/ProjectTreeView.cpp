@@ -223,8 +223,13 @@ void ProjectTreeView::OnCheckAction()
 
 void ProjectTreeView::OnShowLogAction()
 {
-	VersionControlManager::ShowLog(
-		m_Model->GetIndexPath(m_LastSelectItem), "");
+	if (RepoType::Git == VersionControlManager::CurrentRepoType) {
+		VersionControlManager::ShowLog(
+			m_Model->GetIndexPath(m_LastSelectItem), "");
+	} else if (RepoType::Svn == VersionControlManager::CurrentRepoType) {
+		VersionControlManager::ShowLog(
+			m_Model->GetIndexPath(m_LastSelectItem), ".");
+	}
 }
 
 void ProjectTreeView::OnAddAction()

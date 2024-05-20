@@ -1,4 +1,4 @@
-﻿#include "mainwindow.h"
+﻿#include "MainWindow.h"
 #include "./ui_mainwindow.h"
 
 #include <QDebug>
@@ -9,6 +9,7 @@
 #include "utils/ConfigManager.h"
 #include "utils/SystemTrayManager.h"
 #include "utils/VersionControlManager.h"
+#include "utils/FileUtil.h"
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -17,10 +18,27 @@ MainWindow::MainWindow(QWidget* parent)
 	ui->setupUi(this);
 	InitUI();
 	InitConnect();
-
 	SystemTrayManager::Instance()->setMainWidget(this);
 	VersionControlManager::CheckAndSetQuotepath();
 	qInfo() << u8"软件启动。";
+
+	QString path;
+	path = ConfigManager::GetInstance().ReadValue("TortoiseGitPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::TortoiseGitPath = path;
+	}
+	path = ConfigManager::GetInstance().ReadValue("TortoiseSvnPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::TortoiseSvnPath = path;
+	}
+	path = ConfigManager::GetInstance().ReadValue("GitPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::GitPath = path;
+	}
+	path = ConfigManager::GetInstance().ReadValue("SvnPath").toString();
+	if (!path.isEmpty() && FileUtil::FileExists(path)) {
+		VersionControlManager::SvnPath = path;
+	}
 }
 
 MainWindow::~MainWindow()
@@ -32,6 +50,18 @@ MainWindow::~MainWindow()
 	} else {
 		ConfigManager::GetInstance().WriteValue("LastNormalWindowGeometry", geometry());
 	}
+
+	ConfigManager::GetInstance().WriteValue(
+		"TortoiseGitPath", VersionControlManager::TortoiseGitPath);
+	ConfigManager::GetInstance().WriteValue(
+		"TortoiseSvnPath", VersionControlManager::TortoiseSvnPath);
+	ConfigManager::GetInstance().WriteValue(
+		"GitPath", VersionControlManager::GitPath);
+	ConfigManager::GetInstance().WriteValue(
+		"SvnPath", VersionControlManager::SvnPath);
+	
+	SystemTrayManager::Instance()->hide();
+	SystemTrayManager::Instance()->deleteLater();
 
 	delete ui;
 }
@@ -55,6 +85,11 @@ void MainWindow::hideEvent(QHideEvent* event)
 	ConfigManager::GetInstance().WriteList<int>(
 		"LevelSplitterSize", ui->levelSplitter->sizes());
 	QMainWindow::hideEvent(event);
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+	QMainWindow::closeEvent(event);
 }
 
 void MainWindow::InitUI()

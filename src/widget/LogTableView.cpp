@@ -7,11 +7,14 @@
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QTimer>
+#include <QProxyStyle>
+
 
 #include "LogTableModel.h"
 #include "utils/VersionControlManager.h"
 #include "utils/ConfigManager.h"
 #include "utils/FileUtil.h"
+#include "utils/ProxyStyle.h"
 
 
 LogTableView::LogTableView(QWidget* parent)
@@ -103,6 +106,7 @@ void LogTableView::InitUI()
 	horizontalHeader()->setHighlightSections(false);
 	horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
 	horizontalHeader()->resizeSection(1, 24 * 4);
+	verticalHeader()->setDefaultSectionSize(24);
 }
 
 void LogTableView::InitConnect()
@@ -114,22 +118,27 @@ void LogTableView::InitConnect()
 	        m_Delegate, &LogTableDelegate::SetCurrentVersionRow);
 
 
-	m_CopyFullContentAction = new QAction(QIcon(":/icons/add.png"), u8"完整内容", this);
+	m_CopyFullContentAction = new QAction(u8"完整内容", this);
 	connect(m_CopyFullContentAction, &QAction::triggered,
 	        this, &LogTableView::OnCopyFullContentAction);
 
-	m_CopyAuthorNameAction = new QAction(QIcon(":/icons/add.png"), u8"作者姓名", this);
+	m_CopyAuthorNameAction = new QAction(u8"作者姓名", this);
 	connect(m_CopyAuthorNameAction, &QAction::triggered,
 	        this, &LogTableView::OnCopyAuthorNameAction);
 
-	m_CopyInformationAction = new QAction(QIcon(":/icons/add.png"), u8"信息", this);
+	m_CopyInformationAction = new QAction(u8"信息", this);
 	connect(m_CopyInformationAction, &QAction::triggered,
 	        this, &LogTableView::OnCopyInformationAction);
+
+	m_CopyFullContentAction->setIconVisibleInMenu(false);
+	m_CopyAuthorNameAction->setIconVisibleInMenu(false);
+	m_CopyInformationAction->setIconVisibleInMenu(false);
 
 	m_CopySubMenu = new QMenu(u8"复制到剪贴板", this);
 	m_CopySubMenu->addAction(m_CopyFullContentAction);
 	m_CopySubMenu->addAction(m_CopyAuthorNameAction);
 	m_CopySubMenu->addAction(m_CopyInformationAction);
+	m_CopySubMenu->setStyle(new NoIconStyle());
 }
 
 void LogTableView::SlotSelectionChanged(
