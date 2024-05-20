@@ -45,8 +45,6 @@ void SettingsDialog::showEvent(QShowEvent* event)
 
 	ui->hotkeyCheckbox_1->setChecked(HotkeyManager::Instance()->GetShowMainWindowRegistered());
 	ui->hotkeySequenceEdit_1->setKeySequence(HotkeyManager::Instance()->GetShowMainWindowShortcut());
-	qInfo() << HotkeyManager::Instance()->GetShowMainWindowRegistered();
-	qInfo() << ui->hotkeyCheckbox_1->isChecked();
 
 	SlotCheckValidity();
 	QDialog::showEvent(event);
@@ -82,16 +80,12 @@ void SettingsDialog::SlotAcceptButtonClicked()
 	VersionControlManager::TortoiseSvnPath = ui->TortoiseSvnEdit->text();
 	VersionControlManager::GitPath = ui->GitEdit->text();
 	VersionControlManager::SvnPath = ui->SvnEdit->text();
-
 	ConfigManager::GetInstance().WriteValue("DisableHighDpiScaling", ui->cbox1->isChecked());
 	ConfigManager::GetInstance().WriteValue("UseHighDpiPixmaps", ui->cbox2->isChecked());
 	ConfigManager::GetInstance().WriteValue("EnableHighDpiScaling", ui->cbox3->isChecked());
-
-	qInfo() << ui->hotkeySequenceEdit_1->keySequence();
 	HotkeyManager::Instance()->SetShowMainWindowShortcut(ui->hotkeySequenceEdit_1->keySequence());
 	HotkeyManager::Instance()->SetShowMainWindowRegistered(ui->hotkeyCheckbox_1->isChecked());
 	HotkeyManager::Instance()->SaveKey();
-
 	accept();
 }
 

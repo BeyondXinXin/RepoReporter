@@ -35,8 +35,6 @@ void HotkeyManager::Binding()
 
 void HotkeyManager::SaveKey()
 {
-	qInfo()<<GetShowMainWindowRegistered();
-	qInfo()<<GetShowMainWindowShortcut();
 	ConfigManager::GetInstance().WriteValue(
 		"ShowMainWindowRegistered", GetShowMainWindowRegistered());
 	ConfigManager::GetInstance().WriteValue(

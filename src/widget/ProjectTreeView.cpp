@@ -251,10 +251,7 @@ void ProjectTreeView::OnAddAction()
 		if (dialog.ProjectPathFromInputIsEmpty()) {
 			currentIndex = QModelIndex();
 		}
-
 		VCRepoEntry projectPath = dialog.GetProjectPathFromInput();
-		qInfo() << projectPath;
-
 		m_Model->InsertData(currentIndex, projectPath);
 		if (currentIndex.isValid()) {
 			expand(currentIndex);
