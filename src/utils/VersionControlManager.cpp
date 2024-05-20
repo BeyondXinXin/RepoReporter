@@ -75,7 +75,9 @@ QList<VCLogEntry>VersionControlManager::FetchLog(
 	if (RepoType::Git == CurrentRepoType) {
 		QStringList args;
 
-		args << "log" << "--name-status" << "--pretty=format:^^^^%h|%B|%an|%ad|" << "--date=format-local:%c";
+		args << "log" << "--name-status"
+		     << "--pretty=format:^^^^%h|%B|%an|%ad|"
+		     << "--date=format-local:%c";
 		if (allBranch) {
 			args << "--all";
 		}

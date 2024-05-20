@@ -82,6 +82,8 @@ void ProjectTreeView::mouseReleaseEvent(QMouseEvent* event)
 
 void ProjectTreeView::showEvent(QShowEvent* event)
 {
+	QTreeView::showEvent(event);
+
 	QList<bool> expandedStates =
 		ConfigManager::GetInstance()
 		.ReadList<bool>("ProjectTreeViewExpandedStates", QList<bool>{});
@@ -111,7 +113,6 @@ void ProjectTreeView::showEvent(QShowEvent* event)
 	}
 
 	CheckRepoState();
-	QTreeView::showEvent(event);
 }
 
 void ProjectTreeView::hideEvent(QHideEvent* event)

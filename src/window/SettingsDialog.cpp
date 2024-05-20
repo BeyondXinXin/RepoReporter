@@ -4,6 +4,7 @@
 #include "utils/VersionControlManager.h"
 #include "utils/FileUtil.h"
 #include "utils/ConfigManager.h"
+#include "utils/HotkeyManager.h"
 
 SettingsDialog::SettingsDialog(QWidget* parent) :
 	QDialog(parent),
@@ -41,8 +42,16 @@ void SettingsDialog::showEvent(QShowEvent* event)
 	ui->TortoiseSvnEdit->setText(VersionControlManager::TortoiseSvnPath);
 	ui->GitEdit->setText(VersionControlManager::GitPath);
 	ui->SvnEdit->setText(VersionControlManager::SvnPath);
+
+	ui->hotkeyCheckbox_1->setChecked(HotkeyManager::Instance()->GetShowMainWindowRegistered());
+	ui->hotkeySequenceEdit_1->setKeySequence(HotkeyManager::Instance()->GetShowMainWindowShortcut());
+	qInfo() << HotkeyManager::Instance()->GetShowMainWindowRegistered();
+	qInfo() << ui->hotkeyCheckbox_1->isChecked();
+
 	SlotCheckValidity();
 	QDialog::showEvent(event);
+
+	HotkeyManager::Instance()->SetShowMainWindowRegistered(false);
 }
 
 void SettingsDialog::hideEvent(QHideEvent* event)
@@ -77,6 +86,11 @@ void SettingsDialog::SlotAcceptButtonClicked()
 	ConfigManager::GetInstance().WriteValue("DisableHighDpiScaling", ui->cbox1->isChecked());
 	ConfigManager::GetInstance().WriteValue("UseHighDpiPixmaps", ui->cbox2->isChecked());
 	ConfigManager::GetInstance().WriteValue("EnableHighDpiScaling", ui->cbox3->isChecked());
+
+	qInfo() << ui->hotkeySequenceEdit_1->keySequence();
+	HotkeyManager::Instance()->SetShowMainWindowShortcut(ui->hotkeySequenceEdit_1->keySequence());
+	HotkeyManager::Instance()->SetShowMainWindowRegistered(ui->hotkeyCheckbox_1->isChecked());
+	HotkeyManager::Instance()->SaveKey();
 
 	accept();
 }

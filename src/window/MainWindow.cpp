@@ -10,6 +10,7 @@
 #include "utils/SystemTrayManager.h"
 #include "utils/VersionControlManager.h"
 #include "utils/FileUtil.h"
+#include "utils/HotkeyManager.h"
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
@@ -59,7 +60,7 @@ MainWindow::~MainWindow()
 		"GitPath", VersionControlManager::GitPath);
 	ConfigManager::GetInstance().WriteValue(
 		"SvnPath", VersionControlManager::SvnPath);
-	
+
 	SystemTrayManager::Instance()->hide();
 	SystemTrayManager::Instance()->deleteLater();
 
@@ -68,14 +69,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::showEvent(QShowEvent* event)
 {
+	QMainWindow::showEvent(event);
+
 	QList<int> size1 = ConfigManager::GetInstance().ReadList<int>(
 		"VerticalSplitterSize", QList<int>{ 400, 1000 });
 	QList<int> size2 = ConfigManager::GetInstance().ReadList<int>(
 		"LevelSplitterSize", QList<int>{ 400, 400, 400 });
 	ui->verticalSplitter->setSizes(size1);
 	ui->levelSplitter->setSizes(size2);
-
-	QMainWindow::showEvent(event);
 }
 
 void MainWindow::hideEvent(QHideEvent* event)
@@ -109,53 +110,39 @@ void MainWindow::InitUI()
 
 	setWindowTitle(u8"RepoReporter");
 	setWindowIcon(QIcon(":/image/logo.png"));
-
-	m_KeyShowWidget =
-		new QHotkey(Qt::Key_P, Qt::ShiftModifier | Qt::ControlModifier, true, this);
-	connect(m_KeyShowWidget, &QHotkey::activated,
-	        this, [&](){
-		if (isVisible()) {
-			if (isMaximized() || isMinimized()) {
-				showNormal();
-			} else {
-				close();
-			}
-		} else {
-			showNormal();
-		}
-	});
 }
 
 void MainWindow::InitConnect()
 {
-	connect(ui->projectTreeView, &ProjectTreeView::SgnSelectPathChange,
+	connect(ui->projectTreeView,       &ProjectTreeView::SgnSelectPathChange,
 	        this, &MainWindow::ChangeRepo);
 
-	connect(ui->logTableView,    &LogTableView::SgnChangeSelectLog,
+	connect(ui->logTableView,          &LogTableView::SgnChangeSelectLog,
 	        ui->fileTableView, &FileTableView::ChangeLog);
 
-	connect(ui->logTableView,    &LogTableView::SgnUpdateDescription,
-	        this, [&](const QString& str){
-		ui->editMessage->setText(str);
-	});
+	connect(ui->logTableView,          &LogTableView::SgnUpdateDescription,
+	        this, &MainWindow::SetEditMessage);
 
-	connect(ui->logTableView,  &LogTableView::SgnStateLabChange,
+	connect(ui->logTableView,          &LogTableView::SgnStateLabChange,
 	        this, &MainWindow::UpdateStateLab);
 
-	connect(ui->fileTableView, &FileTableView::SgnStateLabChange,
+	connect(ui->fileTableView,         &FileTableView::SgnStateLabChange,
 	        this, &MainWindow::UpdateStateLab);
 
-	connect(ui->searchEdit,    &SearchLineEdit::SgnFilterChanged,
+	connect(ui->searchEdit,            &SearchLineEdit::SgnFilterChanged,
 	        this, &MainWindow::LogTableTextFilterChanged);
 
-	connect(ui->searchEdit,    &SearchLineEdit::textChanged,
+	connect(ui->searchEdit,            &SearchLineEdit::textChanged,
 	        this, &MainWindow::LogTableTextFilterChanged);
 
-	connect(ui->RefreshBtn,    &QPushButton::clicked,
+	connect(ui->RefreshBtn,            &QPushButton::clicked,
 	        this, &MainWindow::RefreshRepoLog);
 
-	connect(ui->AllbranchCbox, &QCheckBox::clicked,
+	connect(ui->AllbranchCbox,         &QCheckBox::clicked,
 	        this, &MainWindow::RefreshRepoLog);
+
+	connect(HotkeyManager::Instance(), &HotkeyManager::SgnShowMainWindow,
+	        this, &MainWindow::ShowMainWindow);
 }
 
 void MainWindow::ChangeRepo(const QString& path)
@@ -246,4 +233,22 @@ void MainWindow::RefreshRepoLog()
 	}
 	ui->branchBtn->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
 	ui->AllbranchCbox->setVisible(RepoType::Git == VersionControlManager::CurrentRepoType);
+}
+
+void MainWindow::SetEditMessage(const QString& str)
+{
+	ui->editMessage->setText(str);
+}
+
+void MainWindow::ShowMainWindow()
+{
+	if (isVisible()) {
+		if (isMaximized() || isMinimized()) {
+			showNormal();
+		} else {
+			close();
+		}
+	} else {
+		showNormal();
+	}
 }

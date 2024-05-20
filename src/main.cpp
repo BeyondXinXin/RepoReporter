@@ -8,6 +8,7 @@
 #include "utils/LogManager.h"
 #include "utils/CommandLineManager.h"
 #include "utils/ConfigManager.h"
+#include "utils/HotkeyManager.h"
 
 int main(int argc, char* argv[])
 {
@@ -27,6 +28,8 @@ int main(int argc, char* argv[])
 
 	CommandLineManager::Initial(app);
 	QApplication::setQuitOnLastWindowClosed(CommandLineManager::option.debug);
+
+	HotkeyManager::Instance()->Binding();
 
 	LogManager logMar;
 	Q_UNUSED(logMar)

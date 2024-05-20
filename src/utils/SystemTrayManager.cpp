@@ -6,6 +6,7 @@
 #include <QStyle>
 #include <QMenu>
 #include <QDebug>
+#include <QTimer>
 
 #include "window/SettingsDialog.h"
 
@@ -37,7 +38,9 @@ void SystemTrayManager::SlotIconIsActived(QSystemTrayIcon::ActivationReason reas
 	switch (reason) {
 	case QSystemTrayIcon::Trigger:
 	case QSystemTrayIcon::DoubleClick: {
-		OnShowMainWidget();
+		QTimer::singleShot(10, this, [&](){
+				OnShowMainWidget();
+			});
 		break;
 	}
 
