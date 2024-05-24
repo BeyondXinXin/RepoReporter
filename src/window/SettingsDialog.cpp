@@ -1,10 +1,13 @@
 ﻿#include "SettingsDialog.h"
 #include "ui_SettingsDialog.h"
 
+#include <QCoreApplication>
+
 #include "utils/VersionControlManager.h"
 #include "utils/FileUtil.h"
 #include "utils/ConfigManager.h"
 #include "utils/HotkeyManager.h"
+#include "utils/AutoRunManager.h"
 
 SettingsDialog::SettingsDialog(QWidget* parent) :
 	QDialog(parent),
@@ -46,6 +49,8 @@ void SettingsDialog::showEvent(QShowEvent* event)
 	ui->hotkeyCheckbox_1->setChecked(HotkeyManager::Instance()->GetShowMainWindowRegistered());
 	ui->hotkeySequenceEdit_1->setKeySequence(HotkeyManager::Instance()->GetShowMainWindowShortcut());
 
+	ui->cboxAutoRun->setChecked(ConfigManager::GetInstance().ReadValue("AutoRun", true).toBool());
+
 	SlotCheckValidity();
 	QDialog::showEvent(event);
 
@@ -83,9 +88,20 @@ void SettingsDialog::SlotAcceptButtonClicked()
 	ConfigManager::GetInstance().WriteValue("DisableHighDpiScaling", ui->cbox1->isChecked());
 	ConfigManager::GetInstance().WriteValue("UseHighDpiPixmaps", ui->cbox2->isChecked());
 	ConfigManager::GetInstance().WriteValue("EnableHighDpiScaling", ui->cbox3->isChecked());
+	ConfigManager::GetInstance().WriteValue("AutoRun", ui->cboxAutoRun->isChecked());
 	HotkeyManager::Instance()->SetShowMainWindowShortcut(ui->hotkeySequenceEdit_1->keySequence());
 	HotkeyManager::Instance()->SetShowMainWindowRegistered(ui->hotkeyCheckbox_1->isChecked());
 	HotkeyManager::Instance()->SaveKey();
+
+
+	if (ui->cboxAutoRun->isChecked()) {
+		AutoRunManager::SetAutoRun(
+			QCoreApplication::applicationName(),
+			QCoreApplication::applicationFilePath());
+	} else {
+		AutoRunManager::RemoveAutoRun(QCoreApplication::applicationName());
+	}
+
 	accept();
 }
 

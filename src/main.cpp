@@ -9,12 +9,15 @@
 #include "utils/CommandLineManager.h"
 #include "utils/ConfigManager.h"
 #include "utils/HotkeyManager.h"
+#include "utils/AutoRunManager.h"
+
 
 int main(int argc, char* argv[])
 {
 	QCoreApplication::setOrganizationName("BeyondXin");
 	QCoreApplication::setApplicationName("RepoReporter");
 	QThread::currentThread()->setObjectName("Main");
+
 
 	bool state;
 	state = ConfigManager::GetInstance().ReadValue("DisableHighDpiScaling", false).toBool();
@@ -25,6 +28,14 @@ int main(int argc, char* argv[])
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling, state);
 
 	QApplication app(argc, argv);
+	state = ConfigManager::GetInstance().ReadValue("AutoRun", true).toBool();
+	if (state) {
+		AutoRunManager::SetAutoRun(
+			QCoreApplication::applicationName(),
+			QCoreApplication::applicationFilePath());
+	} else {
+		AutoRunManager::RemoveAutoRun(QCoreApplication::applicationName());
+	}
 
 	CommandLineManager::Initial(app);
 	QApplication::setQuitOnLastWindowClosed(CommandLineManager::option.debug);
